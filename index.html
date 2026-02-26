@@ -756,8 +756,200 @@
         setTimeout(() => playQueue(queue, item.title), 50);
       };
 
-      const speakAllFlashcards = () => {
-        speak(quickFacts.map(f => `${f.q}. Answer: ${f.a}`).join(". Next. "), "All Flashcards");
+      // Convert flashcard key into a natural exam question
+      const toQuestion = (q) => {
+        const map = {
+          "SAFE Act signed":               "When was the SAFE Act signed into law?",
+          "Pre-licensing hours":           "How many pre-licensing education hours are required?",
+          "CE hours annual":               "How many continuing education hours are required each year?",
+          "SAFE test passing score":       "What is the passing score for the SAFE exam?",
+          "SAFE exam questions":           "How many questions are on the SAFE exam?",
+          "SAFE exam time limit":          "How much time is allowed for the SAFE exam?",
+          "Loan Estimate delivery":        "When must the Loan Estimate be delivered to the borrower?",
+          "Closing Disclosure delivery":   "When must the Closing Disclosure be delivered before closing?",
+          "Right of rescission":           "How long is the right of rescission period?",
+          "Extended rescission (no disclosure)": "How long is the extended right of rescission when disclosures were not provided?",
+          "FHA min down payment":          "What is the minimum down payment for an FHA loan?",
+          "FHA upfront MIP":               "What is the FHA upfront mortgage insurance premium rate?",
+          "FHA annual MIP (typical)":      "What is the typical FHA annual mortgage insurance premium for a 30-year loan?",
+          "VA down payment":               "What is the required down payment for a VA loan?",
+          "VA funding fee (1st use, 0% down)": "What is the VA funding fee for first-time use with no down payment?",
+          "USDA down payment":             "What is the required down payment for a USDA loan?",
+          "USDA upfront guarantee fee":    "What is the USDA upfront guarantee fee?",
+          "USDA annual fee":               "What is the USDA annual guarantee fee?",
+          "Conforming loan limit 2026":    "What is the conforming loan limit for 2026?",
+          "High-cost area ceiling 2026":   "What is the high-cost area loan limit ceiling for 2026?",
+          "PMI auto-cancel LTV":           "At what loan-to-value ratio does PMI automatically cancel?",
+          "Max QM DTI":                    "What is the maximum debt-to-income ratio for a Qualified Mortgage?",
+          "RESPA escrow cushion max":      "What is the maximum escrow cushion allowed under RESPA?",
+          "RESPA escrow surplus refund trigger": "What is the minimum escrow surplus that triggers a required refund?",
+          "Adverse action notice":         "How many days does a lender have to send an adverse action notice?",
+          "ECOA recordkeeping":            "How long must lenders retain records under ECOA?",
+          "Reverse mortgage min age":      "What is the minimum age to qualify for a reverse mortgage?",
+          "HECM upfront MIP":              "What is the upfront mortgage insurance premium for a HECM reverse mortgage?",
+          "HECM annual MIP":               "What is the annual mortgage insurance premium for a HECM reverse mortgage?",
+          "Temporary MLO authority":       "How many days of temporary MLO authority are allowed under the SAFE Act?",
+          "SAR filing threshold":          "At what dollar amount must a Suspicious Activity Report be filed?",
+          "CTR filing threshold":          "At what dollar amount must a Currency Transaction Report be filed?",
+          "HMDA asset threshold 2026":     "What is the HMDA asset exemption threshold for 2026?",
+          "Servicing transfer notice":     "How far in advance must borrowers be notified of a loan servicing transfer?",
+          "HOEPA high-cost threshold (1st lien)": "What is the APR threshold that triggers HOEPA high-cost classification for a first lien?",
+          "QM max points & fees":          "What is the maximum points and fees allowed for a Qualified Mortgage?",
+        };
+        return map[q] || `What is the ${q}?`;
+      };
+
+      // Generate a short beep sound as a base64 WAV and return object URL
+      const makeBeepUrl = () => {
+        const sampleRate = 22050;
+        const duration = 0.18;
+        const freq = 880;
+        const numSamples = Math.floor(sampleRate * duration);
+        const buffer = new ArrayBuffer(44 + numSamples * 2);
+        const view = new DataView(buffer);
+        const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+        writeStr(0, 'RIFF'); view.setUint32(4, 36 + numSamples * 2, true);
+        writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+        writeStr(36, 'data'); view.setUint32(40, numSamples * 2, true);
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sampleRate;
+          const envelope = Math.min(1, t * 40) * Math.max(0, 1 - t / duration * 2);
+          const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.6 * 32767;
+          view.setInt16(44 + i * 2, sample, true);
+        }
+        return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+      };
+
+      // Play beep then wait silently (total ~3 seconds pause)
+      const playBeepPause = () => new Promise(resolve => {
+        const url = makeBeepUrl();
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => {
+          URL.revokeObjectURL(url);
+          // After beep, wait ~2.8s of silence
+          let elapsed = 0;
+          const tick = setInterval(() => {
+            if (stoppedRef.current) { clearInterval(tick); resolve(); return; }
+            elapsed += 100;
+            if (elapsed >= 2800) { clearInterval(tick); resolve(); }
+          }, 100);
+        };
+        audio.play();
+      });
+
+      const speakFlashcard = async (fact) => {
+        stopSpeaking();
+        await new Promise(r => setTimeout(r, 60));
+        stoppedRef.current = false;
+        pausedRef.current = false;
+        setSpeaking(true); setLoading(true); setCurrentLabel(fact.q);
+
+        try {
+          // 1. Fetch and play question
+          const qText = toQuestion(fact.q);
+          const qUrl = await fetchTTS(qText, voiceSettings.voice, voiceSettings.speed);
+          if (stoppedRef.current) { URL.revokeObjectURL(qUrl); return; }
+          setLoading(false);
+          await new Promise((resolve, reject) => {
+            const audio = new Audio(qUrl);
+            audioRef.current = audio;
+            audio.onended = () => { URL.revokeObjectURL(qUrl); resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(qUrl); reject(); };
+            audio.play();
+          });
+          audioRef.current = null;
+
+          if (stoppedRef.current) return;
+
+          // 2. Beep + ~3 sec pause
+          await playBeepPause();
+          if (stoppedRef.current) return;
+
+          // 3. Fetch and play answer
+          const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
+          if (stoppedRef.current) { URL.revokeObjectURL(aUrl); return; }
+          await new Promise((resolve, reject) => {
+            const audio = new Audio(aUrl);
+            audioRef.current = audio;
+            audio.onended = () => { URL.revokeObjectURL(aUrl); resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(aUrl); reject(); };
+            audio.play();
+          });
+          audioRef.current = null;
+        } catch(e) {
+          if (!stoppedRef.current) console.error("Flashcard TTS error:", e);
+        } finally {
+          if (!stoppedRef.current) {
+            setSpeaking(false); setLoading(false); setCurrentLabel("");
+          }
+        }
+      };
+
+      const speakAllFlashcards = async () => {
+        stopSpeaking();
+        await new Promise(r => setTimeout(r, 60));
+        stoppedRef.current = false;
+        pausedRef.current = false;
+        setSpeaking(true); setLoading(true); setCurrentLabel("All Flashcards");
+
+        for (let i = 0; i < quickFacts.length; i++) {
+          if (stoppedRef.current) break;
+
+          // Wait while paused
+          while (pausedRef.current && !stoppedRef.current) {
+            await new Promise(r => setTimeout(r, 100));
+          }
+          if (stoppedRef.current) break;
+
+          const fact = quickFacts[i];
+          setCurrentLabel(`Q${i + 1}: ${fact.q}`);
+
+          try {
+            // Question
+            const qUrl = await fetchTTS(toQuestion(fact.q), voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(qUrl); break; }
+            setLoading(false);
+            await new Promise((resolve, reject) => {
+              const audio = new Audio(qUrl);
+              audioRef.current = audio;
+              audio.onended = () => { URL.revokeObjectURL(qUrl); resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(qUrl); reject(); };
+              audio.play();
+            });
+            audioRef.current = null;
+            if (stoppedRef.current) break;
+
+            // Beep + pause
+            await playBeepPause();
+            if (stoppedRef.current) break;
+
+            // Answer
+            const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(aUrl); break; }
+            await new Promise((resolve, reject) => {
+              const audio = new Audio(aUrl);
+              audioRef.current = audio;
+              audio.onended = () => { URL.revokeObjectURL(aUrl); resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(aUrl); reject(); };
+              audio.play();
+            });
+            audioRef.current = null;
+
+            // Short gap between cards
+            await new Promise(r => setTimeout(r, 800));
+          } catch(e) {
+            if (!stoppedRef.current) console.error("Flashcard TTS error:", e);
+          }
+        }
+
+        if (!stoppedRef.current) {
+          setSpeaking(false); setLoading(false); setCurrentLabel("");
+          playingRef.current = false;
+        }
       };
 
       const speakCheatSheet = () => {
@@ -887,7 +1079,7 @@
                     <div key={idx} style={{ background: "#111118", border: "1px solid #222", borderRadius: "10px", padding: "14px" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                         <div style={{ fontSize: "12px", color: "#999" }}>Q: {fact.q}</div>
-                        <button onClick={() => speak(`${fact.q}. Answer: ${fact.a}`, fact.q)} style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "13px" }}>🔊</button>
+                        <button onClick={() => speakFlashcard(fact)} style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "13px" }}>🔊</button>
                       </div>
                       <div onClick={() => toggleReveal(idx)} style={{ fontSize: "15px", fontWeight: 700, cursor: "pointer", color: revealed[idx] ? "#4aff8a" : "#333", background: revealed[idx] ? "transparent" : "#1a1a1a", borderRadius: "4px", padding: revealed[idx] ? "0" : "2px 8px", minHeight: "22px" }}>
                         {revealed[idx] ? fact.a : "tap to reveal →"}

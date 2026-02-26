@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NMLS Study Guide</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0f; font-family: Georgia, serif; color: #e8e4d9; }
+    button { font-family: Georgia, serif; cursor: pointer; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <style>
+    @keyframes pulse-highlight {
+      0%, 100% { background-color: #ffcc4a44; }
+      50% { background-color: #ffcc4a88; }
+    }
+    .speaking-highlight {
+      animation: pulse-highlight 1s ease-in-out infinite;
+      border-radius: 4px;
+      padding: 1px 3px;
+    }
+  </style>
+  <script type="text/babel">
+    const { useState, useRef, useEffect, useCallback } = React;
+
+    const sections = [
+      {
+        id: "safe", emoji: "🏛️", title: "SAFE Act", color: "#1a3a5c", accent: "#4a9eff",
+        items: [
+          {
+            title: "SAFE Act Basics",
+            mnemonic: "SAFE = State + Federal Together",
+            facts: ["Signed into law: July 30, 2008","Effective date: August 1, 2009. States had 1 year.","Full name: Secure and Fair Enforcement for Mortgage Licensing Act","Purpose: Create nationwide licensing and registration system for MLOs","Administered by: CFPB since Dodd-Frank 2011","Registry: NMLS — Nationwide Multistate Licensing System"],
+          },
+          {
+            title: "Who Needs a License?",
+            mnemonic: "ROME = Residential, Originate, Money, Employment",
+            facts: ["MLO takes residential mortgage loan applications AND offers or negotiates terms","Must be licensed if employed by non-bank, state-chartered institution","Must be registered if employed by federally chartered bank or credit union","Loan Processors: Generally do NOT need license if clerical only","Underwriters: Generally do NOT need license","Exception: If processor exercises independent judgment = needs license"],
+          },
+          {
+            title: "License Requirements — 20-3-8-80",
+            mnemonic: "20 dash 3 dash 8 dash 80. Tattoo these on your brain.",
+            facts: ["20 hours pre-licensing education required","3 hrs federal law, 3 hrs ethics, 2 hrs non-traditional lending, 12 hrs electives","8 hours annual continuing education","CE: 3 federal law, 2 ethics, 2 non-traditional, 1 elective","75% passing score on SAFE MLO test","Background check and credit report required","Retake: 3 attempts → 30-day wait → 3 more → 6-month wait"],
+          },
+          {
+            title: "Surety Bond & Temporary Authority",
+            mnemonic: "Bond = Protection for Borrowers",
+            facts: ["States set their own surety bond amounts","Purpose: Protect consumers from MLO fraud or misconduct","Unique identifier required on all loan documents","License renewal: Annual, typically December 31 deadline","Temporary authority: 120 days if changing from bank to non-bank"],
+          },
+        ],
+      },
+      {
+        id: "trid", emoji: "📋", title: "TRID — RESPA / TILA", color: "#1a3a2a", accent: "#4aff8a",
+        items: [
+          {
+            title: "TRID Key Dates — 3, 3, 7",
+            mnemonic: "3 days for Loan Estimate. 3 days before closing for CD. 7 days to wait.",
+            facts: ["Loan Estimate: Delivered within 3 business days of application","Loan Estimate: Valid for 10 business days","Closing Disclosure: Delivered 3 business days BEFORE closing","Right to rescind: 3 business days after closing — refinance only","Zero tolerance: Origination charges cannot increase at closing","10% tolerance: Certain third-party services","Unlimited tolerance: Non-required services borrower shops for"],
+          },
+          {
+            title: "6 Application Triggers — ALIENS",
+            mnemonic: "ALIENS: A-Address, L-Loan, I-Income, E-Estimated value, N-Name, S-SSN",
+            facts: ["A — Address of property","L — Loan amount","I — Income","E — Estimated value of property","N — Name of borrower","S — Social Security Number","Once all 6 collected = APPLICATION EXISTS → 3-day clock starts"],
+          },
+          {
+            title: "RESPA Prohibited Acts",
+            mnemonic: "No KicKs = No Kickbacks",
+            facts: ["Section 8: Prohibits kickbacks and unearned fees","Section 9: Seller cannot require use of specific title company","Section 10: Limits escrow account cushion to 2 months","AfBA: Must disclose, cannot require use","Penalty Section 8: Up to $10,000 fine + 1 year prison","Applies to: Federally related mortgage loans"],
+          },
+          {
+            title: "APR & Finance Charge",
+            mnemonic: "APR = All Prepaid Rates included",
+            facts: ["APR must be accurate within 1/8% (0.125%) tolerance","Finance charge INCLUDES: points, origination fees, PMI, most closing costs","Finance charge EXCLUDES: appraisal, credit report, title fees","Right of Rescission: Owner-occupied, non-purchase refinance = 3 days","Extended Rescission: If disclosures never given = 3 YEARS","TILA requires: APR, finance charge, amount financed, total payments"],
+          },
+        ],
+      },
+      {
+        id: "ecoa", emoji: "⚖️", title: "Fair Lending Laws", color: "#3a1a3a", accent: "#ff4adf",
+        items: [
+          {
+            title: "ECOA Protected Classes — RACE MAN",
+            mnemonic: "RACE MAN: Race, Age, Color, Exercise of rights, Marital status, Alimony, National origin",
+            facts: ["R — Race","A — Age (18+, cannot be used adversely)","C — Color","E — Exercise of rights under Consumer Protection Act","M — Marital status","A — Alimony/child support (must consider if disclosed)","N — National origin","Also: Religion, Sex, Receipt of public assistance","Adverse Action Notice: 30 days to notify of denial","Recordkeeping: 25 months for applications"],
+          },
+          {
+            title: "Fair Housing Act — 7 Classes",
+            mnemonic: "Race, Color, Religion, National Origin, Sex, Familial Status, Disability",
+            facts: ["Race, Color, Religion, National Origin","Sex (gender)","Familial status (families with children under 18)","Handicap / Disability","Does NOT include: age or marital status federally","Steering: Illegal to direct buyers by race","Redlining: Illegal to deny credit by geography","Blockbusting: Inducing panic selling based on protected class"],
+          },
+          {
+            title: "CRA & HMDA",
+            mnemonic: "HMDA = Data Only. Does NOT prohibit discrimination.",
+            facts: ["HMDA: Requires lenders to collect and report mortgage data","HMDA does NOT prohibit discrimination — just collects data","CRA: Encourages banks to serve entire community","CRA ratings: Outstanding, Satisfactory, Needs to Improve, Substantial Non-Compliance","HMDA asset threshold: $59 million (2026)","LAR: Loan Application Register — annual submission"],
+          },
+          {
+            title: "3 Types of Discrimination",
+            mnemonic: "3 D's: Disparate Treatment, Disparate Impact, Redlining",
+            facts: ["1. Disparate Treatment: Treating similarly situated people differently (intent)","2. Disparate Impact: Neutral policy with discriminatory effect","3. Redlining: Refusing to lend in certain geographic areas","Reverse Redlining: Targeting minority areas with predatory loans","Steering: Directing based on protected class","Blockbusting: Inducing panic selling"],
+          },
+        ],
+      },
+      {
+        id: "conventional", emoji: "🏠", title: "Loan Types & Guidelines", color: "#2a2a1a", accent: "#ffcc4a",
+        items: [
+          {
+            title: "Conventional Loans — 80/20/28/36",
+            mnemonic: "80% LTV, 20% down, 28 front-end, 36 back-end",
+            facts: ["Conforming loan limit 2026: $832,750 (1-unit)","High-cost areas: up to $1,249,125","PMI required if LTV > 80% (less than 20% down)","PMI cancellation: Request at 80% LTV; auto-cancel at 78% LTV","DTI: Typically 28% front / 36% back","Fannie Mae (FNMA) & Freddie Mac (FHLMC) = GSEs"],
+          },
+          {
+            title: "FHA Loans — 3.5% / 580 / MIP",
+            mnemonic: "FHA = 3.5% down, 580 score, MIP for life of loan",
+            facts: ["Min down payment: 3.5% (score 580+)","Min down payment: 10% (score 500–579)","MIP Upfront: 1.75% of loan amount","MIP Annual: 0.15%–0.75% (most borrowers pay 0.55%)","MIP Duration: Life of loan if down < 10%","MIP Duration: 11 years if down ≥ 10%","Max DTI: 43% typically","FHA insured by: HUD"],
+          },
+          {
+            title: "VA Loans — 0% Down / No PMI",
+            mnemonic: "VA = Veterans get 0% down, no PMI, but pay Funding Fee",
+            facts: ["Down payment: $0 — 100% financing","PMI: NONE","Funding fee: 2.15% (first use, no down)","Funding fee waived for: disabled veterans","Certificate of Eligibility (COE) required","No loan limit with full entitlement (post 2020)"],
+          },
+          {
+            title: "USDA Loans — Rural / 0% Down",
+            mnemonic: "USDA = Rural area, 0% down, income under 115% of median",
+            facts: ["Down payment: 0%","Upfront guarantee fee: 1%","Annual fee: 0.35%","Income limit: 115% of area median income","Property must be in eligible rural area","Administered by: US Dept of Agriculture"],
+          },
+        ],
+      },
+      {
+        id: "underwriting", emoji: "🔢", title: "Underwriting & Income", color: "#1a2a3a", accent: "#4ad4ff",
+        items: [
+          {
+            title: "The 4 C's of Credit",
+            mnemonic: "Credit, Capacity, Capital, Collateral",
+            facts: ["1. Credit History: FICO score, payment history, derogatory marks","2. Capacity: Ability to repay — income vs. debt (DTI)","3. Capital: Assets, savings, reserves","4. Collateral: Property value (LTV ratio)","FICO range: 300–850","Min score conventional: 620–640 typically"],
+          },
+          {
+            title: "DTI Ratios — Front & Back",
+            mnemonic: "Front = housing only. Back = ALL debts. Both ÷ gross monthly income.",
+            facts: ["Front-end: PITI ÷ Gross Monthly Income","PITI = Principal, Interest, Taxes, Insurance","Back-end: (PITI + all debts) ÷ Gross Monthly Income","Conventional: 28% front / 36% back","FHA: 31% front / 43% back","VA: No front-end, 41% back-end","USDA: 29% front / 41% back","QM rule: Max 43% DTI"],
+          },
+          {
+            title: "Income Calculations",
+            mnemonic: "Self-employed = 2 years tax returns ÷ 24 months",
+            facts: ["W-2 employee: Base salary from pay stub + W-2","Overtime/bonus: 2-year average if consistent","Self-employed: 2 years returns, net + add-backs ÷ 24","Commission: 2-year average","Rental income: 75% of gross rent (vacancy factor)","Social Security: Grossed up 125% (non-taxable)","Child support/alimony: 3 years continuance required"],
+          },
+          {
+            title: "LTV & CLTV",
+            mnemonic: "LTV = Loan ÷ Value. CLTV = all loans ÷ Value.",
+            facts: ["LTV = Loan Amount ÷ lower of appraised value or purchase price","CLTV = (1st + 2nd mortgage) ÷ Value","80% LTV = 20% equity = no PMI threshold","97% LTV = 3% down (HomeReady programs)","Appraisal form: URAR Form 1004"],
+          },
+        ],
+      },
+      {
+        id: "regulations", emoji: "📜", title: "Key Regulations & Numbers", color: "#2a1a1a", accent: "#ff7a4a",
+        items: [
+          {
+            title: "Critical Dollar Amounts",
+            mnemonic: "Memorize these or lose points!",
+            facts: ["HOEPA High Cost: APR > 6.5% above APOR (1st lien)","HOEPA Points & Fees: > 5% of loan amount","RESPA Section 10 escrow cushion: 2 months max","PMI auto-cancel: 78% LTV (22% equity)","Section 8 penalty: Up to $10,000 + 1 year prison"],
+          },
+          {
+            title: "Qualified Mortgage (QM) Rules",
+            mnemonic: "QM = Safe Harbor. 43% DTI. No bad features.",
+            facts: ["QM requires: Verify Ability to Repay (ATR)","Max DTI: 43%","Max loan term: 30 years","No negative amortization","No interest-only periods","No balloon payments (except rural/small creditor)","Points and fees: Max 3% of loan amount"],
+          },
+          {
+            title: "Dodd-Frank 2010",
+            mnemonic: "Dodd-Frank July 21, 2010 = created CFPB",
+            facts: ["Signed: July 21, 2010","Created: CFPB (Consumer Financial Protection Bureau)","CFPB consolidated protection from 7 agencies","MLO compensation: Cannot be based on loan terms (Reg Z)","Dual compensation: Cannot receive from both lender and borrower","Steering: Cannot push to higher-cost loan if lower available"],
+          },
+          {
+            title: "Privacy Laws",
+            mnemonic: "GLB = Give Borrowers annual Privacy Notice",
+            facts: ["Gramm-Leach-Bliley (GLB): Annual privacy notice required","Right to opt out of sharing with non-affiliated third parties","Red Flags Rule: Must have identity theft detection program","FACTA: Consumers get free annual credit report","FCRA: Governs credit reporting and adverse action notices"],
+          },
+        ],
+      },
+      {
+        id: "mortgage_types", emoji: "💰", title: "Mortgage Products", color: "#1a3a3a", accent: "#4affee",
+        items: [
+          {
+            title: "ARM Loans — Index + Margin + Caps",
+            mnemonic: "5/1 ARM = Fixed 5 years, adjusts every 1 year after",
+            facts: ["Index: Benchmark rate (SOFR, CMT) — the base","Margin: Lender profit added to index — fixed throughout","Fully Indexed Rate = Index + Margin","2/2/5 ARM: First adjust max 2%, each max 2%, lifetime max 5%","Teaser rate: Below-market initial rate"],
+          },
+          {
+            title: "Risky Loan Features",
+            mnemonic: "Neg Am = BAD. Balloon = RISKY. Prepay Penalty = COSTLY.",
+            facts: ["Negative amortization: Payment < interest = balance INCREASES","Balloon: Large final payment (e.g. 5/25 balloon)","Hard prepayment penalty: Applies to any prepayment","Soft prepayment penalty: Refinance only","Interest-only: Pay interest only, then fully amortize","3-2-1 buydown: Rate reduced 3%, 2%, 1% first 3 years"],
+          },
+          {
+            title: "HELOCs & Second Mortgages",
+            mnemonic: "HELOC = Credit card secured by your home",
+            facts: ["HELOC: Home Equity Line of Credit — revolving credit","Draw period: Typically 10 years","Repayment period: Typically 20 years","Piggyback 80/10/10: 80% 1st, 10% 2nd, 10% down — avoids PMI"],
+          },
+          {
+            title: "Reverse Mortgages — HECM",
+            mnemonic: "HECM = HUD-insured reverse mortgage. Must be 62+.",
+            facts: ["HECM: Home Equity Conversion Mortgage (FHA insured)","Age requirement: 62 or older","No monthly payment required by borrower","Repayment: Sale, death, moving out, or 12-month non-occupancy","HUD-approved counseling REQUIRED before closing","MIP: 2% upfront + 0.5% annual"],
+          },
+        ],
+      },
+      {
+        id: "closing", emoji: "🔑", title: "Closing & Title", color: "#2a1a3a", accent: "#c44aff",
+        items: [
+          {
+            title: "Title Insurance",
+            mnemonic: "Owner pays once, protects forever",
+            facts: ["Lender's title policy: Protects lender — required for most loans","Owner's title policy: Protects buyer — optional but recommended","Chain of title: History of property ownership","Cloud on title: Any claim or lien affecting clear title","Quiet title action: Court action to clear title dispute"],
+          },
+          {
+            title: "Deed Types — Most to Least Protection",
+            mnemonic: "General = Most protection. Quitclaim = Least protection.",
+            facts: ["General Warranty Deed: Warrants title against ALL claims","Special Warranty Deed: Warrants claims during grantor's ownership only","Bargain and Sale Deed: No warranties (common in foreclosures)","Quitclaim Deed: No warranties — conveys whatever interest grantor has","Deed of Trust: 3 parties — trustor, trustee, beneficiary"],
+          },
+          {
+            title: "Escrow & Closing Costs",
+            mnemonic: "PITI = Principal, Interest, Taxes, Insurance — goes into escrow monthly",
+            facts: ["Escrow: Holds funds for taxes and insurance","Initial escrow deposit: Up to 2 months cushion allowed","Origination charges: Zero tolerance — cannot increase","Recording fees: Zero tolerance","Proration: Dividing costs between buyer and seller at closing"],
+          },
+        ],
+      },
+      {
+        id: "ethics", emoji: "⚠️", title: "Ethics, Fraud & BSA/AML", color: "#2a1a10", accent: "#ff6b35",
+        items: [
+          {
+            title: "Mortgage Fraud Types — EXAM FAVORITE",
+            mnemonic: "FISA: Flipping, Identity, Straw buyer, Appraisal",
+            facts: [
+              "Occupancy fraud: Claiming primary residence when it's investment property",
+              "Income fraud: Inflating or fabricating income on application",
+              "Appraisal fraud: Inflating property value — MLO cannot pressure appraiser",
+              "Straw buyer: Using another person's name/credit to obtain loan",
+              "Property flipping fraud: Rapid resale with artificially inflated appraisal",
+              "Air loans: Loans on non-existent properties",
+              "Dual contracts: Two purchase contracts — one real, one inflated for lender",
+              "Chunking: Convincing investor to buy multiple properties without disclosing",
+              "Fraud for property: Borrower misrepresents info to get loan",
+              "Fraud for profit: Industry insider scheme for financial gain — more serious",
+            ],
+          },
+          {
+            title: "MLO Ethics Rules",
+            mnemonic: "SAME: Steering, Anti-churning, Material disclosure, Ethics first",
+            facts: [
+              "Cannot steer borrower to higher-cost loan if they qualify for better",
+              "Cannot churn loans: repeated refinancing that benefits MLO not borrower",
+              "Must disclose all fees, conflicts of interest, and loan terms accurately",
+              "Cannot accept undisclosed gifts, kickbacks, or referral fees",
+              "Cannot discourage borrower from seeking outside advice",
+              "Must treat all applicants fairly — no disparate treatment",
+              "Fiduciary duty: Act in best interest of borrower",
+              "Must report suspicious activity — cannot tip off subject of SAR",
+            ],
+          },
+          {
+            title: "BSA / AML — Bank Secrecy Act",
+            mnemonic: "BSA = Big Suspicious Activity reports",
+            facts: [
+              "BSA: Requires financial institutions to detect and deter money laundering",
+              "SAR (Suspicious Activity Report): File if suspicious activity ≥ $5,000",
+              "CTR (Currency Transaction Report): File for cash transactions > $10,000",
+              "Structuring: Intentionally breaking up cash to avoid CTR = illegal",
+              "USA PATRIOT Act: Requires Customer Identification Program (CIP)",
+              "CIP requires: Name, DOB, address, ID number (SSN, passport, alien ID)",
+              "FinCEN: Financial Crimes Enforcement Network — receives BSA reports",
+              "Red flags: Unexplained cash, multiple properties, inconsistent income",
+              "Must NOT tip off the subject of a SAR filing",
+            ],
+          },
+          {
+            title: "UDAP / UDAAP",
+            mnemonic: "UDAAP = Unfair, Deceptive, Abusive Acts or Practices",
+            facts: [
+              "UDAP: FTC authority — Unfair or Deceptive Acts or Practices",
+              "UDAAP: CFPB authority (adds 'Abusive') — broader post-Dodd-Frank",
+              "Unfair: Causes substantial injury, not avoidable, harm outweighs benefit",
+              "Deceptive: Misleads reasonable consumer — even technically true ads",
+              "Abusive: Exploits lack of understanding OR consumer's reliance on MLO",
+              "Reg Z Advertising: Cannot advertise teaser rate without full disclosure",
+              "Trigger terms: If ad mentions rate/payment/down — must disclose all terms",
+            ],
+          },
+        ],
+      },
+      {
+        id: "math", emoji: "🔢", title: "Mortgage Math", color: "#102a1a", accent: "#50fa7b",
+        items: [
+          {
+            title: "DTI Calculation",
+            mnemonic: "Front = Housing ÷ Gross. Back = All Debts ÷ Gross.",
+            facts: [
+              "Front-end DTI = PITI ÷ Gross Monthly Income × 100",
+              "Example: PITI $1,500 / Income $5,000 = 30% front-end",
+              "Back-end DTI = (PITI + all monthly debts) ÷ Gross Monthly Income × 100",
+              "Example: PITI $1,500 + debts $500 / Income $5,000 = 40% back-end",
+              "Gross income = before taxes — NOT net take-home",
+              "Include: car loans, student loans, credit card minimums, child support",
+              "Exclude: utilities, insurance, groceries, cell phone",
+            ],
+          },
+          {
+            title: "LTV & Down Payment Math",
+            mnemonic: "LTV = Loan ÷ Value. Down = Value × (1 - LTV)",
+            facts: [
+              "LTV = Loan Amount ÷ Lesser of Purchase Price or Appraised Value × 100",
+              "Example: $180,000 loan / $200,000 value = 90% LTV",
+              "Down payment = Purchase Price × down payment %",
+              "Example: $200,000 × 3.5% = $7,000 FHA down payment",
+              "If appraised < purchase price: use appraised value for LTV",
+              "PMI required if LTV > 80% on conventional loans",
+              "To avoid PMI: need 20% down ($40,000 on $200,000 home)",
+            ],
+          },
+          {
+            title: "Points & Rate Buydown",
+            mnemonic: "1 point = 1% of loan. Buys rate down ~0.25%",
+            facts: [
+              "1 discount point = 1% of loan amount paid upfront",
+              "Example: 1 point on $200,000 loan = $2,000 upfront cost",
+              "Typically buys rate down by 0.125% to 0.25%",
+              "Break-even: Points cost ÷ monthly savings = months to recoup",
+              "Example: $2,000 cost / $50 monthly savings = 40 months break-even",
+              "Origination points: Lender fee — not same as discount points",
+              "2-1 buydown: Rate 2% lower year 1, 1% lower year 2, full rate year 3",
+            ],
+          },
+          {
+            title: "Self-Employed Income Calculation",
+            mnemonic: "2 years returns ÷ 24 = monthly qualifying income",
+            facts: [
+              "Use 2 years of federal tax returns (1040 + Schedule C/E/K-1)",
+              "Add back: depreciation, depletion, non-recurring losses",
+              "Self-employed = owns 25% or more of business",
+              "Formula: (Year 1 net + Year 2 net + add-backs) ÷ 24",
+              "If income declining year over year: use lower year only",
+              "Business must show 2-year history of self-employment",
+              "YTD P&L may be required if > 10% variance from prior year",
+            ],
+          },
+        ],
+      },
+      {
+        id: "market", emoji: "🏦", title: "Mortgage Market & Secondary Market", color: "#1a1a3a", accent: "#bd93f9",
+        items: [
+          {
+            title: "Primary vs. Secondary Market",
+            mnemonic: "Primary = originate. Secondary = buy/sell loans.",
+            facts: [
+              "Primary market: Where lenders originate loans directly to borrowers",
+              "Secondary market: Where lenders sell loans to investors",
+              "Selling loans frees up capital to originate more loans",
+              "Fannie Mae (FNMA): GSE — buys conforming conventional loans",
+              "Freddie Mac (FHLMC): GSE — buys conforming conventional loans",
+              "Ginnie Mae (GNMA): Government — backs FHA, VA, USDA loan pools",
+              "MBS (Mortgage-Backed Securities): Pools of loans sold to investors",
+              "Servicer: Collects payments — may differ from original lender",
+              "Servicing transfer: Borrower must be notified 15 days before transfer",
+            ],
+          },
+          {
+            title: "Mortgage Terminology — Key Terms",
+            mnemonic: "Know these or get tripped up on exam day",
+            facts: [
+              "Subordination: Junior lien holder agrees to remain in lower priority",
+              "Assumable loan: Buyer takes over seller's existing mortgage",
+              "Acceleration clause: Entire loan due immediately on default",
+              "Due-on-sale clause: Loan must be paid off when property is sold",
+              "Alienation clause: Same as due-on-sale — prevents assumption",
+              "Deficiency judgment: Lender sues for remaining balance after foreclosure",
+              "Recourse loan: Lender can pursue borrower's assets after foreclosure",
+              "Non-recourse: Lender limited to collateral only",
+              "Yield Spread Premium (YSP): Rebate to broker for higher-rate loan",
+            ],
+          },
+          {
+            title: "Appraisal Rules",
+            mnemonic: "MLO cannot pressure appraiser — EVER",
+            facts: [
+              "USPAP: Uniform Standards of Professional Appraisal Practice",
+              "URAR (Form 1004): Standard appraisal form for single-family homes",
+              "AIR (Appraiser Independence Requirements): Prohibits pressure on appraiser",
+              "MLO cannot: suggest value, threaten appraiser, withhold payment if low",
+              "Desk review: Brief office review of existing appraisal",
+              "Field review: Appraiser visits property to verify",
+              "BPO (Broker Price Opinion): Not an appraisal — lower cost estimate",
+              "AMC (Appraisal Management Company): Third-party ordering appraisals",
+            ],
+          },
+          {
+            title: "Exam Format — Know This!",
+            mnemonic: "125 questions, 190 minutes, 75% to pass",
+            facts: [
+              "Total questions: 125 (115 scored + 10 unscored pretest)",
+              "Time allowed: 190 minutes (3 hrs 10 min)",
+              "Passing score: 75% = 86 correct out of 115 scored",
+              "Exam fee: $110 per attempt",
+              "Wait periods: 3 fails → 30-day wait → 3 more fails → 180-day wait",
+              "Test content: Loan Origination 27%, Fed Laws 24%, Mortgage Knowledge 20%, Ethics 18%, State Content 11%",
+              "ID required: Government-issued photo ID",
+              "Cannot bring: calculators, notes, phones",
+              "Prometric testing centers nationwide",
+            ],
+          },
+        ],
+      },
+    ];
+
+    const quickFacts = [
+      { q: "SAFE Act signed", a: "July 30, 2008" },
+      { q: "Pre-licensing hours", a: "20 hours total" },
+      { q: "CE hours annual", a: "8 hours" },
+      { q: "SAFE test passing score", a: "75%" },
+      { q: "SAFE exam questions", a: "125 total (115 scored)" },
+      { q: "SAFE exam time limit", a: "190 minutes" },
+      { q: "Loan Estimate delivery", a: "3 business days after application" },
+      { q: "Closing Disclosure delivery", a: "3 business days before closing" },
+      { q: "Right of rescission", a: "3 business days (refi only)" },
+      { q: "Extended rescission (no disclosure)", a: "3 years" },
+      { q: "FHA min down payment", a: "3.5% (580+ score)" },
+      { q: "FHA upfront MIP", a: "1.75%" },
+      { q: "FHA annual MIP (typical)", a: "0.55% (30-yr, <5% down)" },
+      { q: "VA down payment", a: "0%" },
+      { q: "VA funding fee (1st use, 0% down)", a: "2.15%" },
+      { q: "USDA down payment", a: "0%" },
+      { q: "USDA upfront guarantee fee", a: "1%" },
+      { q: "USDA annual fee", a: "0.35%" },
+      { q: "Conforming loan limit 2026", a: "$832,750" },
+      { q: "High-cost area ceiling 2026", a: "$1,249,125" },
+      { q: "PMI auto-cancel LTV", a: "78%" },
+      { q: "Max QM DTI", a: "43%" },
+      { q: "RESPA escrow cushion max", a: "2 months" },
+      { q: "RESPA escrow surplus refund trigger", a: "$50 overage" },
+      { q: "Adverse action notice", a: "30 days" },
+      { q: "ECOA recordkeeping", a: "25 months" },
+      { q: "Reverse mortgage min age", a: "62 years old" },
+      { q: "HECM upfront MIP", a: "2%" },
+      { q: "HECM annual MIP", a: "0.5%" },
+      { q: "Temporary MLO authority", a: "120 days" },
+      { q: "SAR filing threshold", a: "$5,000 suspicious activity" },
+      { q: "CTR filing threshold", a: "$10,000 cash transaction" },
+      { q: "HMDA asset threshold 2026", a: "$59 million" },
+      { q: "Servicing transfer notice", a: "15 days before effective date" },
+      { q: "HOEPA high-cost threshold (1st lien)", a: "APR > 6.5% above APOR" },
+      { q: "QM max points & fees", a: "3% of loan amount" },
+    ];
+
+    // ── Voice Settings Panel ──────────────────────────────────────────────────
+    function VoiceSettingsPanel({ voiceSettings, setVoiceSettings }) {
+      const [open, setOpen] = useState(false);
+      return (
+        <div style={{ position: "relative" }}>
+          <button onClick={() => setOpen(p => !p)} style={{ background: open ? "#4a9eff22" : "#ffffff11", border: `1px solid ${open ? "#4a9eff66" : "#ffffff22"}`, borderRadius: "8px", padding: "8px 14px", color: open ? "#4a9eff" : "#aaa", fontSize: "13px", display: "flex", alignItems: "center", gap: "6px" }}>
+            ⚙️ Voice Options
+          </button>
+          {open && (
+            <div style={{ position: "absolute", top: "44px", right: 0, background: "#1a1a2e", border: "1px solid #4a9eff44", borderRadius: "12px", padding: "18px", zIndex: 200, minWidth: "280px", boxShadow: "0 8px 32px rgba(0,0,0,0.7)" }}>
+              <div style={{ fontSize: "13px", color: "#4a9eff", fontWeight: 700, marginBottom: "14px", letterSpacing: "1px" }}>🎙️ GOOGLE TTS SETTINGS</div>
+
+              {/* Gender */}
+              <div style={{ marginBottom: "14px" }}>
+                <div style={{ fontSize: "11px", color: "#888", marginBottom: "6px", letterSpacing: "1px" }}>GENDER</div>
+                <div style={{ display: "flex", gap: "6px" }}>
+                  {["female", "male", "any"].map(g => (
+                    <button key={g} onClick={() => setVoiceSettings(p => ({ ...p, gender: g, voice: GCP_VOICES[g][0].id }))}
+                      style={{ flex: 1, padding: "7px 0", borderRadius: "6px", border: `1px solid ${voiceSettings.gender === g ? "#4a9eff88" : "#333"}`, background: voiceSettings.gender === g ? "#4a9eff22" : "transparent", color: voiceSettings.gender === g ? "#4a9eff" : "#777", fontSize: "12px", cursor: "pointer" }}>
+                      {g === "female" ? "♀ Female" : g === "male" ? "♂ Male" : "⚡ Any"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Voice picker */}
+              <div style={{ marginBottom: "14px" }}>
+                <div style={{ fontSize: "11px", color: "#888", marginBottom: "6px", letterSpacing: "1px" }}>VOICE</div>
+                <div style={{ display: "grid", gap: "5px" }}>
+                  {GCP_VOICES[voiceSettings.gender].map(v => (
+                    <button key={v.id} onClick={() => setVoiceSettings(p => ({ ...p, voice: v.id }))}
+                      style={{ padding: "8px 12px", borderRadius: "6px", border: `1px solid ${voiceSettings.voice === v.id ? "#4a9eff88" : "#2a2a3a"}`, background: voiceSettings.voice === v.id ? "#4a9eff22" : "#111120", color: voiceSettings.voice === v.id ? "#4a9eff" : "#888", fontSize: "12px", cursor: "pointer", textAlign: "left" }}>
+                      {voiceSettings.voice === v.id ? "✓ " : ""}{v.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Speed */}
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "11px", color: "#888", letterSpacing: "1px" }}>SPEED</span>
+                  <span style={{ fontSize: "12px", color: "#4a9eff" }}>{voiceSettings.speed}x</span>
+                </div>
+                <input type="range" min="0.6" max="1.5" step="0.05" value={voiceSettings.speed}
+                  onChange={e => setVoiceSettings(p => ({ ...p, speed: parseFloat(e.target.value) }))}
+                  style={{ width: "100%", accentColor: "#4a9eff" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: "10px", color: "#555" }}>
+                  <span>Slow</span><span>Normal</span><span>Fast</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ── Google Cloud TTS ──────────────────────────────────────────────────────
+    const GCP_API_KEY = "AIzaSyA4gtzTwXeyhhtsxpXzxvID92yi9AaiekY";
+
+    // Google WaveNet voices — very natural US English
+    const GCP_VOICES = {
+      female: [
+        { id: "en-US-Journey-F",    label: "Journey F — conversational ⭐" },
+        { id: "en-US-Neural2-F",    label: "Neural2 F — clear, natural" },
+        { id: "en-US-Wavenet-F",    label: "WaveNet F — warm" },
+        { id: "en-US-Neural2-C",    label: "Neural2 C — soft" },
+      ],
+      male: [
+        { id: "en-US-Journey-D",    label: "Journey D — conversational ⭐" },
+        { id: "en-US-Neural2-D",    label: "Neural2 D — deep, natural" },
+        { id: "en-US-Wavenet-D",    label: "WaveNet D — strong" },
+        { id: "en-US-Neural2-A",    label: "Neural2 A — smooth" },
+      ],
+      any: [
+        { id: "en-US-Journey-F",    label: "Journey F (female) ⭐" },
+        { id: "en-US-Journey-D",    label: "Journey D (male) ⭐" },
+        { id: "en-US-Neural2-F",    label: "Neural2 F (female)" },
+        { id: "en-US-Neural2-D",    label: "Neural2 D (male)" },
+        { id: "en-US-Wavenet-F",    label: "WaveNet F (female)" },
+        { id: "en-US-Wavenet-D",    label: "WaveNet D (male)" },
+      ],
+    };
+
+    function App() {
+      const [activeSection, setActiveSection] = useState(null);
+      const [revealed, setRevealed] = useState({});
+      const [activeTab, setActiveTab] = useState("sections");
+      const [speaking, setSpeaking] = useState(false);
+      const [paused, setPaused] = useState(false);
+      const [loading, setLoading] = useState(false);
+      const [currentLabel, setCurrentLabel] = useState("");
+      const [highlightedFact, setHighlightedFact] = useState(null);
+      const [voiceSettings, setVoiceSettings] = useState({ gender: "female", voice: "en-US-Journey-F", speed: 1.0 });
+
+      // Practice state
+      const [practiceQuestions, setPracticeQuestions] = useState([]);
+      const [practiceAnswers, setPracticeAnswers] = useState({});  // { qIdx: choiceIdx }
+      const [practiceSubmitted, setPracticeSubmitted] = useState(false);
+      const [scoreHistory, setScoreHistory] = useState([]);
+      const [showHistory, setShowHistory] = useState(false);
+
+      const audioRef = useRef(null);
+      const playingRef = useRef(false);
+      const stoppedRef = useRef(false);
+      const pausedRef = useRef(false);
+
+      // ── Practice Question Bank ────────────────────────────────────────────────
+      const ALL_QUESTIONS = [
+{ cat:"Federal Laws", q:"Under RESPA, what is the maximum escrow cushion a servicer may maintain?", choices:["1 month","2 months","3 months","6 months"], correct:1 },
+{ cat:"Federal Laws", q:"RESPA Section 8 prohibits which of the following?", choices:["Charging origination fees above 3%","Kickbacks and unearned fees for referrals","Balloon payments on qualified mortgages","Prepayment penalties on FHA loans"], correct:1 },
+{ cat:"Federal Laws", q:"Which RESPA form replaced the GFE and HUD-1 for most transactions after October 2015?", choices:["Uniform Residential Loan Application","Loan Estimate and Closing Disclosure","Settlement Cost Booklet and TIL","Initial Escrow Account Disclosure"], correct:1 },
+{ cat:"Federal Laws", q:"Under RESPA, a lender must provide the Special Information Booklet within how many business days of application?", choices:["1 business day","3 business days","5 business days","7 business days"], correct:1 },
+{ cat:"Federal Laws", q:"A RESPA Section 10 escrow surplus of how much or more must be returned to the borrower within 30 days?", choices:["$25","$50","$100","$200"], correct:1 },
+{ cat:"Federal Laws", q:"Which of the following transactions is NOT covered by RESPA?", choices:["Purchase of a one-unit residential property","Refinance of a primary residence","Loan for 25 acres of vacant land for personal use","Home equity line of credit secured by a primary residence"], correct:2 },
+{ cat:"Federal Laws", q:"Under RESPA, the annual escrow analysis must be provided to the borrower within how many days of the analysis date?", choices:["10 days","30 days","60 days","90 days"], correct:1 },
+{ cat:"Federal Laws", q:"RESPA applies to federally related mortgage loans. Which of the following is federally related?", choices:["A loan made by an individual for a commercial property","A seller-financed transaction with no institutional lender","A loan insured by FHA","A loan for the purchase of a business"], correct:2 },
+{ cat:"Federal Laws", q:"A builder who refers buyers to an affiliated title company in exchange for a fee would most likely violate:", choices:["TILA Regulation Z","RESPA Section 8","ECOA Regulation B","HMDA Regulation C"], correct:1 },
+{ cat:"Federal Laws", q:"Under RESPA, which disclosure informs borrowers of their rights regarding escrow accounts?", choices:["Initial Escrow Account Disclosure","HUD-1 Settlement Statement","Good Faith Estimate","Servicing Transfer Notice"], correct:0 },
+{ cat:"Federal Laws", q:"Under TRID, the Closing Disclosure must be received by the borrower at least how many business days before consummation?", choices:["1 business day","2 business days","3 business days","5 business days"], correct:2 },
+{ cat:"Federal Laws", q:"The Loan Estimate must be delivered to the borrower within how many business days of receiving a complete application?", choices:["1 business day","2 business days","3 business days","5 business days"], correct:2 },
+{ cat:"Federal Laws", q:"Under TRID, which six pieces of information trigger a complete loan application?", choices:["Name, SSN, income, property address, estimated value, loan amount","Name, address, income, credit score, loan type, down payment","SSN, employer, income, DTI, LTV, loan purpose","Name, income, assets, debts, property type, occupancy"], correct:0 },
+{ cat:"Federal Laws", q:"The right of rescission under TILA allows a borrower on a non-purchase refinance how many business days to cancel?", choices:["1 business day","3 business days","5 business days","7 business days"], correct:1 },
+{ cat:"Federal Laws", q:"Under Regulation Z, the APR for a mortgage loan includes:", choices:["Principal and interest only","Interest rate plus certain fees and costs expressed as a yearly rate","The interest rate adjusted for inflation","Only the lender's origination fees"], correct:1 },
+{ cat:"Federal Laws", q:"Under TRID, if the APR increases by more than 0.125% after a Closing Disclosure is issued, the lender must:", choices:["Issue a corrected Closing Disclosure and wait 3 business days","Issue a new Loan Estimate immediately","Cancel the transaction","Notify only the settlement agent"], correct:0 },
+{ cat:"Federal Laws", q:"TILA requires the lender to disclose the finance charge, which includes:", choices:["Principal amount of the loan","All costs the borrower must pay to obtain the loan","Only prepaid interest and origination fees","Property taxes and homeowner's insurance"], correct:1 },
+{ cat:"Federal Laws", q:"A loan is considered a 'Higher-Priced Mortgage Loan' (HPML) under Regulation Z when the APR exceeds APOR by:", choices:["0.5% for a first lien","1.5% for a first lien","3.5% for a first lien","5% for a first lien"], correct:1 },
+{ cat:"Federal Laws", q:"Under Regulation Z, MLO compensation cannot be based on:", choices:["Hours worked on the file","The interest rate or terms of the loan","A flat fee per closed loan","Annual salary"], correct:1 },
+{ cat:"Federal Laws", q:"Which of the following is a 'trigger term' under Regulation Z advertising rules requiring full APR disclosure?", choices:["'Low monthly payments available'","'Call for our best rates'","'$1,500 down payment'","'Competitive rates for qualified buyers'"], correct:2 },
+{ cat:"Federal Laws", q:"Under TILA, how long must a lender retain evidence of compliance with disclosure requirements?", choices:["1 year","2 years","3 years","5 years"], correct:1 },
+{ cat:"Federal Laws", q:"A borrower refinances their primary home and signs documents on Monday. The right of rescission expires at midnight on:", choices:["Monday","Tuesday","Wednesday","Thursday"], correct:3 },
+{ cat:"Federal Laws", q:"Under TRID, which form is used to itemize all final loan costs at closing?", choices:["Loan Estimate","Uniform Residential Loan Application","Closing Disclosure","HUD-1 Settlement Statement"], correct:2 },
+{ cat:"Federal Laws", q:"Which regulation implements the Equal Credit Opportunity Act?", choices:["Regulation B","Regulation C","Regulation X","Regulation Z"], correct:0 },
+{ cat:"Federal Laws", q:"Under ECOA, a lender must notify an applicant of adverse action within how many days of a completed application?", choices:["10 days","30 days","45 days","60 days"], correct:1 },
+{ cat:"Federal Laws", q:"ECOA requires lenders to retain records of credit applications for how long?", choices:["12 months","18 months","25 months","36 months"], correct:2 },
+{ cat:"Federal Laws", q:"Under ECOA, which of the following is a prohibited basis for credit discrimination?", choices:["Debt-to-income ratio","National origin","Loan-to-value ratio","Credit score"], correct:1 },
+{ cat:"Federal Laws", q:"If a lender requires a co-signer on a loan for a married applicant's separate account, this may violate:", choices:["RESPA","TILA","ECOA","HMDA"], correct:2 },
+{ cat:"Federal Laws", q:"ECOA requires that an appraisal or valuation copy be provided to the applicant:", choices:["Only if the borrower requests it in writing","Promptly and no later than 3 business days before closing","At least 10 calendar days before closing","At no specific time, just before closing"], correct:1 },
+{ cat:"Federal Laws", q:"Under ECOA, income from part-time employment must be:", choices:["Ignored unless it has been received for two years","Considered if it is regular and likely to continue","Reduced by 25% before being counted","Excluded if the borrower also has full-time income"], correct:1 },
+{ cat:"Federal Laws", q:"A lender who offers less favorable loan terms to women than to men with the same qualifications is engaging in:", choices:["Disparate treatment discrimination","Disparate impact discrimination","Redlining","Steering"], correct:0 },
+{ cat:"Federal Laws", q:"The Fair Housing Act prohibits discrimination in residential real estate transactions based on all of the following EXCEPT:", choices:["Race and color","National origin","Sexual orientation at the federal level until 2020","Familial status"], correct:2 },
+{ cat:"Federal Laws", q:"Redlining is best defined as:", choices:["Refusing to make loans in certain geographic areas based on the racial composition","Charging higher rates to minority borrowers","Steering minority borrowers to FHA loans only","Declining all applications with less than 20% down"], correct:0 },
+{ cat:"Federal Laws", q:"Under the Fair Housing Act, which of the following is an example of 'blockbusting'?", choices:["Refusing to show homes in certain neighborhoods to minority buyers","Inducing homeowners to sell by predicting racial demographic changes in an area","Offering loans only in certain ZIP codes","Steering wealthy buyers away from low-income neighborhoods"], correct:1 },
+{ cat:"Federal Laws", q:"The Fair Housing Act is enforced by which federal agency?", choices:["CFPB","HUD","FTC","OCC"], correct:1 },
+{ cat:"Federal Laws", q:"HMDA requires lenders to collect and report mortgage data primarily to:", choices:["Prevent discrimination by prohibiting unfair lending","Identify discriminatory lending patterns and monitor community needs","Set maximum interest rates on home loans","Regulate the secondary mortgage market"], correct:1 },
+{ cat:"Federal Laws", q:"The 2026 HMDA asset exemption threshold for depository institutions is:", choices:["$54 million","$56 million","$58 million","$59 million"], correct:3 },
+{ cat:"Federal Laws", q:"HMDA is implemented by which regulation?", choices:["Regulation B","Regulation C","Regulation X","Regulation Z"], correct:1 },
+{ cat:"Federal Laws", q:"Which of the following data points must be collected and reported under HMDA?", choices:["Borrower's exact salary","Race, sex, and ethnicity of applicant","Borrower's marital status","Co-borrower's credit score"], correct:1 },
+{ cat:"Federal Laws", q:"A lender that is covered by HMDA must submit its loan data by:", choices:["January 1 of the following year","March 1 of the following year","June 30 of the following year","December 31 of the current year"], correct:1 },
+{ cat:"Federal Laws", q:"Under HOEPA, a first-lien loan is classified as 'high-cost' if the APR exceeds APOR by more than:", choices:["3.5%","5%","6.5%","8%"], correct:2 },
+{ cat:"Federal Laws", q:"HOEPA high-cost loans are prohibited from including:", choices:["Fixed interest rates","Balloon payments if the loan term is less than 10 years","PMI requirements","Adjustable rate features"], correct:1 },
+{ cat:"Federal Laws", q:"Which disclosure is required at least 3 business days before closing for a HOEPA high-cost loan?", choices:["Loan Estimate","HOEPA Notice with specific warnings","Closing Disclosure","Mortgage Servicing Disclosure"], correct:1 },
+{ cat:"Federal Laws", q:"Under HOEPA, prepayment penalties on high-cost loans are generally:", choices:["Capped at 3% of the loan amount","Allowed only in the first 5 years","Prohibited","Limited to 60 months"], correct:2 },
+{ cat:"Federal Laws", q:"The Gramm-Leach-Bliley Act requires financial institutions to provide customers with a privacy notice:", choices:["Only at account opening","Annually as long as the relationship continues","Only when the policy changes","At closing only"], correct:1 },
+{ cat:"Federal Laws", q:"Under GLB, the 'opt-out' provision allows consumers to:", choices:["Prevent sharing of their NPI with affiliated companies","Prevent sharing of their NPI with non-affiliated third parties","Remove their information from NMLS permanently","Opt out of credit reporting"], correct:1 },
+{ cat:"Federal Laws", q:"Non-public personal information (NPI) under GLB includes:", choices:["General market research data","Publicly available government records","A consumer's account numbers and transaction history","General demographic data"], correct:2 },
+{ cat:"Federal Laws", q:"Under the Fair Credit Reporting Act (FCRA), how long may most negative information remain on a consumer's credit report?", choices:["3 years","5 years","7 years","10 years"], correct:2 },
+{ cat:"Federal Laws", q:"A lender who takes adverse action based on a credit report must:", choices:["File a report with the CFPB","Provide the consumer with the credit bureau's name and a notice of their rights","Delete the negative information from the report","Offer the borrower alternative financing"], correct:1 },
+{ cat:"Federal Laws", q:"Under FCRA, how long may a bankruptcy remain on a consumer's credit report?", choices:["5 years","7 years","10 years","15 years"], correct:2 },
+{ cat:"Federal Laws", q:"When a consumer disputes information on their credit report, the credit bureau must investigate within:", choices:["10 business days","15 business days","30 days","45 days"], correct:2 },
+{ cat:"Federal Laws", q:"Which act created the Consumer Financial Protection Bureau (CFPB)?", choices:["SAFE Act (2008)","Gramm-Leach-Bliley Act (1999)","Dodd-Frank Wall Street Reform Act (2010)","Housing and Economic Recovery Act (2008)"], correct:2 },
+{ cat:"Federal Laws", q:"A Qualified Mortgage (QM) provides lenders with a presumption of compliance with the:", choices:["Fair Housing Act","Ability-to-Repay (ATR) rule","RESPA anti-kickback rule","TRID disclosure requirements"], correct:1 },
+{ cat:"Federal Laws", q:"Under the Ability-to-Repay rule, which of the following must a lender consider?", choices:["Borrower's projected future income only","Current income, assets, employment, credit history, and monthly debt payments","Borrower's net worth and investment portfolio","The property's anticipated appreciation"], correct:1 },
+{ cat:"Federal Laws", q:"A non-QM loan is best described as:", choices:["Any loan with a rate above the current prime rate","A loan that doesn't meet the safe harbor QM definition but may still comply with ATR","A subprime loan that is prohibited after Dodd-Frank","A loan made to a non-US citizen"], correct:1 },
+{ cat:"Federal Laws", q:"Under RESPA, a loan servicer must acknowledge a borrower's written Qualified Written Request (QWR) within:", choices:["3 business days","5 business days","10 business days","30 business days"], correct:1 },
+{ cat:"Federal Laws", q:"A servicer who transfers loan servicing must provide written notice to the borrower at least how many days before the transfer?", choices:["7 days","15 days","30 days","45 days"], correct:1 },
+{ cat:"Federal Laws", q:"Under federal law, a servicer must credit a borrower's mortgage payment as of the date it is received if it is received by:", choices:["5:00 PM on the payment due date","The end of business on the due date","Any time on the due date","The close of business the next day"], correct:2 },
+{ cat:"Federal Laws", q:"Which of the following is NOT a trigger term under Regulation Z advertising rules?", choices:["Amount of any payment","Annual percentage rate (APR)","Number of payments","Amount of down payment"], correct:1 },
+{ cat:"Federal Laws", q:"The Military Lending Act (MLA) caps the Military APR (MAPR) for covered loans to active-duty service members at:", choices:["18%","28%","36%","42%"], correct:2 },
+{ cat:"Federal Laws", q:"The Servicemembers Civil Relief Act (SCRA) limits interest rates on pre-service obligations for active-duty members to:", choices:["3%","6%","8%","12%"], correct:1 },
+{ cat:"Federal Laws", q:"Under the CAN-SPAM Act, a lender sending commercial emails must:", choices:["Obtain prior written consent for each email","Include a working unsubscribe mechanism","Disclose the lender's NMLS number in every email","Only contact borrowers who have applied in the past 90 days"], correct:1 },
+{ cat:"Federal Laws", q:"The Telephone Consumer Protection Act (TCPA) restricts:", choices:["Credit bureau reporting","Unsolicited marketing calls and texts to cell phones without prior express consent","The use of credit scores in underwriting","Advertising of subprime loan products"], correct:1 },
+{ cat:"Federal Laws", q:"UDAAP stands for Unfair, Deceptive, or Abusive Acts or Practices. The CFPB defines an 'abusive' act as one that:", choices:["Is technically illegal under state law","Takes unreasonable advantage of a consumer's lack of understanding or inability to protect their interests","Misleads a reasonable consumer about loan terms","Charges fees above the regulatory maximum"], correct:1 },
+{ cat:"Federal Laws", q:"The Home Owners' Loan Act (HOLA) is most directly associated with the regulation of:", choices:["National banks","Federal savings associations (thrifts)","Non-bank mortgage companies","Credit unions"], correct:1 },
+{ cat:"Federal Laws", q:"Which federal agency primarily supervises non-bank mortgage companies for consumer protection purposes?", choices:["OCC","Federal Reserve","CFPB","FDIC"], correct:2 },
+{ cat:"Federal Laws", q:"RESPA requires that a Closing Disclosure itemize:", choices:["Only lender fees","All settlement services charges and their providers","Only borrower-paid items","Title and escrow fees only"], correct:1 },
+{ cat:"Federal Laws", q:"Under TRID, a 'changed circumstance' that allows a revised Loan Estimate includes:", choices:["The borrower taking longer than expected to return documents","A natural disaster that damages the property after application","The lender discovering a new competing offer","The borrower's credit score improving after application"], correct:1 },
+{ cat:"Federal Laws", q:"Under TRID, which fee category has ZERO tolerance for increases between the Loan Estimate and Closing Disclosure?", choices:["Title insurance selected by the borrower from a provided list","Transfer taxes","Prepaid interest","Recording fees"], correct:1 },
+{ cat:"Federal Laws", q:"The Real Estate Settlement Procedures Act (RESPA) is implemented by:", choices:["Regulation B","Regulation C","Regulation X","Regulation Z"], correct:2 },
+{ cat:"Federal Laws", q:"Under Dodd-Frank, a loan originator who is also the creditor (such as a small community bank) is:", choices:["Subject to all Reg Z compensation rules","Exempt from MLO compensation rules under certain conditions","Required to pay all closing costs","Prohibited from originating QM loans"], correct:1 },
+{ cat:"Federal Laws", q:"The Equal Credit Opportunity Act covers which types of credit?", choices:["Only mortgage loans","Only consumer loans","All credit transactions regardless of purpose","Only federally insured loans"], correct:2 },
+{ cat:"Federal Laws", q:"Under RESPA, an 'affiliated business arrangement' (AfBA) disclosure must be provided:", choices:["Only at closing","At or before the time of referral","Only if the fee exceeds $50","Within 3 days of application"], correct:1 },
+{ cat:"Federal Laws", q:"Which form does Regulation Z require to disclose the cost of credit in a mortgage transaction?", choices:["HUD-1","Loan Estimate (Form H-24)","Uniform Residential Loan Application","Appraisal Waiver Notice"], correct:1 },
+{ cat:"Federal Laws", q:"A HPML requires an escrow account for taxes and insurance for at least how many years?", choices:["1 year","3 years","5 years","The life of the loan"], correct:2 },
+{ cat:"Federal Laws", q:"Under Regulation Z, how long after consummation may a borrower exercise an extended right of rescission if required disclosures were never provided?", choices:["1 year","3 years","5 years","7 years"], correct:1 },
+{ cat:"Federal Laws", q:"Which act specifically requires creditors to provide applicants a free copy of any appraisal used in connection with a first-lien mortgage?", choices:["RESPA","ECOA","FCRA","HMDA"], correct:1 },
+{ cat:"Federal Laws", q:"Under TRID, the 10% tolerance category applies to:", choices:["Lender origination charges","Recording fees and charges paid to unaffiliated third parties from a provided list","Title insurance selected by the borrower from a provided list","Homeowner's insurance"], correct:1 },
+{ cat:"Federal Laws", q:"The Home Mortgage Disclosure Act was enacted in:", choices:["1968","1975","1988","1994"], correct:1 },
+{ cat:"Federal Laws", q:"Regulation C, which implements HMDA, is administered by:", choices:["HUD","FHA","CFPB","Federal Reserve Board"], correct:2 },
+{ cat:"Federal Laws", q:"Under ECOA, a creditor who receives an application from a married couple must:", choices:["Report the loan in the name of the primary earner","Treat each spouse as an independent applicant","Require both spouses to sign all loan documents","Report the loan in both names regardless of who applied"], correct:3 },
+{ cat:"Federal Laws", q:"The 'three-day cooling off period' under TILA gives borrowers the right to rescind a refinance until midnight of the third business day after which event?", choices:["The date of loan application","The date the Loan Estimate was received","The later of consummation, delivery of Truth-in-Lending disclosures, or delivery of the rescission notice","The date of the appraisal"], correct:2 },
+{ cat:"Loan Types", q:"What is the 2026 conforming loan limit for a one-unit property in most areas?", choices:["$766,550","$806,500","$832,750","$1,149,825"], correct:2 },
+{ cat:"Loan Types", q:"FHA loans require a minimum down payment of 3.5% for borrowers with a credit score of at least:", choices:["500","550","580","620"], correct:2 },
+{ cat:"Loan Types", q:"The FHA upfront mortgage insurance premium (UFMIP) is:", choices:["0.55%","1.00%","1.75%","2.15%"], correct:2 },
+{ cat:"Loan Types", q:"VA loans are guaranteed by which government agency?", choices:["HUD","Department of Veterans Affairs","Department of Agriculture","FHA"], correct:1 },
+{ cat:"Loan Types", q:"USDA loans are available for properties in:", choices:["Any urban area","Designated rural and some suburban areas","Only farmland with agricultural use","Any state capital city"], correct:1 },
+{ cat:"Loan Types", q:"On a conventional loan, PMI automatically cancels when LTV reaches:", choices:["85%","80%","78%","75%"], correct:2 },
+{ cat:"Loan Types", q:"A HECM reverse mortgage requires the borrower to be at least:", choices:["55","60","62","65"], correct:2 },
+{ cat:"Loan Types", q:"USDA's upfront guarantee fee for a purchase loan is:", choices:["0.35%","1.00%","1.75%","2.15%"], correct:1 },
+{ cat:"Loan Types", q:"A 5/1 ARM means the rate is:", choices:["Fixed 5 years, adjusts every year after","Fixed 1 year, adjusts every 5 years","Capped at 5% above start, adjusts every year","Adjusts every 5 months then locks for 1 year"], correct:0 },
+{ cat:"Loan Types", q:"Which loan type does NOT require monthly mortgage insurance premiums?", choices:["FHA loan","USDA loan","Conventional loan with 10% down","VA loan"], correct:3 },
+{ cat:"Loan Types", q:"Negative amortization occurs when:", choices:["The interest rate exceeds the index plus margin","The monthly payment is less than the interest accruing, causing the balance to grow","LTV exceeds 100% due to falling home values","The borrower pays extra principal each month"], correct:1 },
+{ cat:"Loan Types", q:"FHA allows a minimum credit score of 500 for borrowers who put at least what percent down?", choices:["3.5%","5%","10%","20%"], correct:2 },
+{ cat:"Loan Types", q:"A jumbo loan is best defined as:", choices:["Any loan with an interest rate above 7%","A loan that exceeds the conforming loan limits","A loan requiring a 20% down payment","An FHA loan above $400,000"], correct:1 },
+{ cat:"Loan Types", q:"The VA funding fee for a first-time use with no down payment is:", choices:["1.25%","1.75%","2.15%","3.30%"], correct:2 },
+{ cap:"Loan Types", cat:"Loan Types", q:"Which of the following is NOT a feature of an FHA loan?", choices:["Requires a minimum 3.5% down with 580+ credit score","Can be assumed by a qualified buyer","Has no loan limits","Requires both UFMIP and annual MIP"], correct:2 },
+{ cat:"Loan Types", q:"A VA Interest Rate Reduction Refinance Loan (IRRRL) is also known as a:", choices:["VA Cash-Out Refinance","VA Streamline Refinance","VA Purchase Loan","VA Construction Loan"], correct:1 },
+{ cat:"Loan Types", q:"USDA's annual guarantee fee is:", choices:["0.35% of the outstanding balance","0.55% of the outstanding balance","1.00% of the outstanding balance","1.75% of the original loan amount"], correct:0 },
+{ cat:"Loan Types", q:"What is the maximum seller concession allowed on a conventional loan with less than 10% down?", choices:["2%","3%","4%","6%"], correct:1 },
+{ cat:"Loan Types", q:"An ARM's 'cap structure' of 2/2/5 means:", choices:["2% initial cap, 2% periodic cap, 5% lifetime cap","2% periodic cap, 2% lifetime cap, 5% start rate","Start rate 2%, first adjustment 2%, subsequent adjustments 5%","First adjustment max 2%, each subsequent adjustment max 2%, lifetime max 5%"], correct:3 },
+{ cat:"Loan Types", q:"Which index is commonly used for conventional ARM loans?", choices:["Prime rate","SOFR (Secured Overnight Financing Rate)","Treasury bill rate only","Federal funds rate"], correct:1 },
+{ cat:"Loan Types", q:"A balloon mortgage typically has a large lump-sum payment due:", choices:["At the end of the first year","After a set number of years before the loan is fully amortized","When the interest rate adjusts","When the borrower sells the property"], correct:1 },
+{ cat:"Loan Types", q:"An interest-only loan allows a borrower to pay only interest for an initial period. The risk to the borrower is:", choices:["Higher initial payments","No equity is built during the interest-only period","Early prepayment penalties","Mandatory escrow during the IO period"], correct:1 },
+{ cat:"Loan Types", q:"A piggyback loan (80-10-10) is used to:", choices:["Qualify for a larger loan amount","Avoid PMI by splitting the financing into two loans","Qualify for USDA loan eligibility","Reduce the VA funding fee"], correct:1 },
+{ cat:"Loan Types", q:"The FHA annual MIP for most borrowers in 2026 is approximately:", choices:["0.15%","0.35%","0.55%","1.05%"], correct:2 },
+{ cat:"Loan Types", q:"Which conventional loan program allows for a 3% down payment?", choices:["Jumbo mortgage","Fannie Mae HomeReady or Freddie Mac Home Possible","FHA loan","USDA loan"], correct:1 },
+{ cat:"Loan Types", q:"A second mortgage is also called a:", choices:["Wraparound mortgage","Subordinate lien","Senior lien","Participation mortgage"], correct:1 },
+{ cat:"Loan Types", q:"A 'no-cost' mortgage loan typically means:", choices:["All closing costs are waived by the lender","Closing costs are rolled into the loan amount or recovered through a higher rate","The borrower is exempt from property taxes","No appraisal is required"], correct:1 },
+{ cat:"Loan Types", q:"In a purchase transaction, which of the following is the maximum LTV for an FHA loan with a 580 credit score?", choices:["90%","93.5%","96.5%","100%"], correct:2 },
+{ cat:"Loan Types", q:"Fannie Mae's Desktop Underwriter (DU) is:", choices:["A government-mandated underwriting system","An automated underwriting system used by lenders","A manual underwriting checklist","A database of denied loan applications"], correct:1 },
+{ cat:"Loan Types", q:"What is the primary purpose of private mortgage insurance (PMI)?", choices:["To protect the borrower in case of job loss","To protect the lender if the borrower defaults","To protect the title company from fraud","To insure the property against damage"], correct:1 },
+{ cat:"Loan Types", q:"In a fixed-rate mortgage, what changes over the life of the loan?", choices:["The interest rate","The monthly payment","The ratio of interest to principal within each payment","Nothing — both payment and rate stay the same"], correct:2 },
+{ cat:"Loan Types", q:"The 'margin' on an ARM loan is:", choices:["The index rate that changes periodically","A fixed percentage added to the index to determine the fully-indexed rate","The maximum rate increase per adjustment period","The below-market teaser rate"], correct:1 },
+{ cat:"Loan Types", q:"FHA MIP on loans with terms greater than 15 years and LTV above 90% at origination must be paid for:", choices:["5 years","11 years","The life of the loan","Until LTV reaches 80%"], correct:2 },
+{ cat:"Loan Types", q:"A Home Equity Conversion Mortgage (HECM) is best described as:", choices:["A second mortgage for home improvements","A government-insured reverse mortgage for seniors 62+","A bridge loan used during a home purchase","A construction-to-permanent loan"], correct:1 },
+{ cat:"Loan Types", q:"Which type of loan allows a borrower to take out money above the current loan balance when refinancing?", choices:["Rate-and-term refinance","Streamline refinance","Cash-out refinance","IRRRL"], correct:2 },
+{ cat:"Loan Types", q:"Under Fannie Mae guidelines, a manufactured home must be:", choices:["On a leased lot","On a permanent foundation and titled as real property","Single-wide only","Built before 1976"], correct:1 },
+{ cat:"Loan Types", q:"What does 'assumable' mean in a mortgage context?", choices:["The loan can be transferred to a new buyer who takes over payments","The lender can call the loan due at any time","The borrower can skip payments in hardship situations","The rate resets automatically every 5 years"], correct:0 },
+{ cat:"Loan Types", q:"A construction-to-permanent loan:", choices:["Requires separate applications for construction and permanent financing","Converts from a construction loan to a permanent mortgage at completion","Is only available for commercial properties","Requires 50% down during construction"], correct:1 },
+{ cat:"Loan Types", q:"The 'due-on-sale' clause in a mortgage requires:", choices:["The seller to pay off the loan before the property can be listed","Full repayment of the loan when the property is sold or transferred","The buyer to refinance within 90 days of purchase","The borrower to notify the lender 30 days before selling"], correct:1 },
+{ cat:"Loan Types", q:"A graduated payment mortgage (GPM):", choices:["Has payments that start lower and increase over time","Has payments that decrease over the life of the loan","Has payments that remain fixed for 5 years then adjust","Has no monthly payment requirement until the 5th year"], correct:0 },
+{ cat:"Loan Types", q:"Which of the following best describes the secondary mortgage market?", choices:["Where borrowers shop for the best mortgage rates","Where lenders sell existing mortgage loans to investors","Where distressed properties are auctioned","Where FHA and VA loans are originated"], correct:1 },
+{ cat:"Loan Types", q:"Fannie Mae and Freddie Mac are:", choices:["Federal agencies within the U.S. Department of Housing","Government-sponsored enterprises (GSEs) that buy conventional loans","Private insurance companies that insure FHA loans","Non-profit housing advocacy organizations"], correct:1 },
+{ cat:"Loan Types", q:"Ginnie Mae (GNMA) provides guarantees for mortgage-backed securities backed by:", choices:["Conventional loans only","FHA, VA, and USDA government-backed loans","Jumbo loans","Commercial real estate loans"], correct:1 },
+{ cat:"Loan Types", q:"A mortgage-backed security (MBS) is:", choices:["A type of mortgage insurance","A bond backed by a pool of mortgage loans","A government grant for first-time homebuyers","A lender's license to originate loans"], correct:1 },
+{ cat:"Loan Types", q:"What is 'loan seasoning' as it relates to mortgage lending?", choices:["The process of aging a credit report","The period a borrower must own a property before refinancing","Adding spice to loan terms to attract borrowers","Adjusting the interest rate for inflation"], correct:1 },
+{ cat:"Loan Types", q:"A 'non-recourse' loan means:", choices:["The borrower has no personal liability beyond the collateral pledged","The lender can pursue the borrower's other assets after foreclosure","The loan does not accrue interest","The borrower is not required to make monthly payments"], correct:0 },
+{ cat:"Loan Types", q:"Which loan type is most appropriate for a veteran purchasing a primary residence with no down payment?", choices:["Conventional","FHA","VA","USDA"], correct:2 },
+{ cat:"Loan Types", q:"What is a 'bridge loan'?", choices:["A loan used to buy commercial properties","A short-term loan used to bridge the gap between buying a new home and selling an existing one","A government loan for infrastructure projects","A type of construction loan"], correct:1 },
+{ cat:"Loan Types", q:"A HELOC (Home Equity Line of Credit) is:", choices:["A fixed-rate second mortgage","A revolving line of credit secured by a home's equity","A type of reverse mortgage","A first-lien mortgage for home purchases only"], correct:1 },
+{ cat:"Loan Types", q:"What does 'LTV' stand for, and how is it calculated?", choices:["Loan-to-Value: loan amount ÷ appraised value × 100","Liability-to-Value: monthly debt ÷ home value × 100","Loan-to-Verify: loan amount ÷ verified income × 100","Level-to-Value: equity ÷ appraised value × 100"], correct:0 },
+{ cat:"Loan Types", q:"A buydown mortgage is best described as:", choices:["A loan where the rate is permanently reduced by paying points","An arrangement where the seller or builder pays fees to temporarily lower the borrower's interest rate","A loan with no origination fees","A variable rate loan tied to the prime rate"], correct:1 },
+{ cat:"Loan Types", q:"The FHA 203(k) loan is designed for:", choices:["First-time homebuyers in rural areas","Purchase and rehabilitation of existing homes","Seniors seeking reverse mortgages","Investment properties requiring renovation"], correct:1 },
+{ cat:"Loan Types", q:"What is the maximum VA loan guarantee amount that allows 100% financing?", choices:["$144,000","$726,200","No limit — VA full entitlement allows 100% financing with no loan limit","$1,089,300"], correct:2 },
+{ cat:"Loan Types", q:"A 'conforming loan' must meet the standards of:", choices:["FHA and VA guidelines","Fannie Mae and Freddie Mac guidelines","Only state-specific lending laws","USDA rural development guidelines"], correct:1 },
+{ cat:"Loan Types", q:"Yield Spread Premium (YSP) refers to:", choices:["The difference between the rate the lender offers and the borrower's credit score","Compensation paid by a lender to a broker for delivering a loan at a higher-than-par rate","A premium charged by the title company","Points paid to lower the interest rate"], correct:1 },
+{ cat:"Loan Types", q:"Which entity regulates Fannie Mae and Freddie Mac?", choices:["HUD","CFPB","Federal Housing Finance Agency (FHFA)","Federal Reserve"], correct:2 },
+{ cat:"Loan Types", q:"A borrower with a loan amount of $300,000 and a home value of $400,000 has an LTV of:", choices:["60%","65%","75%","80%"], correct:2 },
+{ cat:"Loan Types", q:"A 2-1 buydown reduces the borrower's rate by:", choices:["2% in year 1, 1% in year 2, then permanent rate in year 3","1% in year 1, 2% in year 2, then permanent rate in year 3","2% every year for the life of the loan","1% permanently from the start"], correct:0 },
+{ cat:"Loan Types", q:"Subordination refers to:", choices:["Removing a co-borrower from a loan","The process where a junior lien agrees to remain in a lower priority position","Paying off a second mortgage early","Adding a co-signer to a loan in default"], correct:1 },
+{ cat:"Loan Types", q:"A 'rate lock' in mortgage lending:", choices:["Permanently fixes the rate for the life of the loan","Guarantees a specific interest rate for a defined period during the loan process","Requires the borrower to take the loan at the locked rate even if rates fall","Increases the interest rate if the borrower extends the lock"], correct:1 },
+{ cat:"Loan Types", q:"Which type of mortgage is most suitable for a borrower who plans to sell the home within 5 years?", choices:["30-year fixed rate","15-year fixed rate","5/1 ARM","Interest-only jumbo"], correct:2 },
+{ cat:"Loan Types", q:"The term 'amortization' in mortgage lending refers to:", choices:["The gradual repayment of a loan through regular installments of principal and interest","The process of appraising a property","Increasing loan principal when payments are deferred","Calculating the maximum DTI ratio"], correct:0 },
+{ cat:"Loan Types", q:"If a loan has an interest rate of 6% and 1 point was paid at origination, the point equals:", choices:["$600 on a $100,000 loan","$1,000 on a $100,000 loan","$600 on any loan size","$100 regardless of loan size"], correct:1 },
+{ cat:"Loan Types", q:"The high-cost area conforming loan limit in 2026 for a one-unit property is:", choices:["$999,999","$1,089,300","$1,149,825","$1,249,125"], correct:3 },
+{ cat:"Loan Types", q:"Which of the following is a feature unique to VA loans?", choices:["No down payment required with full entitlement","No mortgage insurance ever","No loan limits with full entitlement","All of the above"], correct:3 },
+{ cat:"Loan Types", q:"An 'acceleration clause' in a mortgage note means:", choices:["The lender can increase the interest rate if the borrower is late","The entire loan balance becomes due immediately upon default or triggering event","The borrower can pay ahead without penalty","The amortization period speeds up after 10 years"], correct:1 },
+{ cat:"Loan Types", q:"Which of the following is required for USDA loan eligibility?", choices:["Property must be in a designated rural area, borrower must meet income limits","Borrower must be a veteran or active-duty military","Property must be a manufactured home","Borrower must be a first-time homebuyer"], correct:0 },
+{ cat:"Underwriting", q:"Which of the 4 C's of credit refers to the borrower's income relative to their debts?", choices:["Credit","Collateral","Capital","Capacity"], correct:3 },
+{ cat:"Underwriting", q:"For a Qualified Mortgage (QM), the maximum allowable back-end DTI is:", choices:["36%","41%","43%","50%"], correct:2 },
+{ cat:"Underwriting", q:"When calculating LTV on a purchase, if the appraised value is $220,000 and the purchase price is $200,000, what value is used?", choices:["$220,000","$200,000","The average of both","Either, at lender discretion"], correct:1 },
+{ cat:"Underwriting", q:"For self-employed borrowers, income is typically calculated using:", choices:["6 months of bank statements only","Most recent year's tax return only","2-year average of net income plus allowable add-backs from tax returns","Gross business revenue for the past year"], correct:2 },
+{ cat:"Underwriting", q:"Rental income from an investment property is typically counted at what percentage?", choices:["100%","90%","75%","50%"], correct:2 },
+{ cat:"Underwriting", q:"Non-taxable income such as Social Security may be grossed up by approximately:", choices:["110%","115%","125%","133%"], correct:2 },
+{ cat:"Underwriting", q:"Which form is the standard appraisal report for a single-family home?", choices:["Form 1003","Form 1004 (URAR)","Form 1008","Form 4506-C"], correct:1 },
+{ cat:"Underwriting", q:"The Appraiser Independence Requirements (AIR) prohibit an MLO from:", choices:["Ordering a second appraisal","Providing the appraiser with the sales contract","Suggesting a value to the appraiser","Selecting an AMC"], correct:2 },
+{ cat:"Underwriting", q:"A borrower earns $6,000/month gross income. Their PITI is $1,500 and monthly debts total $600. What is the back-end DTI?", choices:["25%","30%","35%","40%"], correct:2 },
+{ cat:"Underwriting", q:"A borrower's front-end DTI limit for FHA loans is typically:", choices:["28%","31%","36%","43%"], correct:1 },
+{ cat:"Underwriting", q:"The Uniform Residential Loan Application (URLA) is also known as:", choices:["Form 1004","Form 1003","Form 4506-C","Form 1008"], correct:1 },
+{ cat:"Underwriting", q:"The purpose of Form 4506-C is to:", choices:["Order a credit report","Request IRS tax transcripts to verify income","Authorize an appraisal","Check borrower's employment history"], correct:1 },
+{ cat:"Underwriting", q:"Under Fannie Mae guidelines, the minimum credit score for a conventional loan with less than 25% down is typically:", choices:["580","620","640","660"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following income sources requires 2 years of documented history before it can be used for qualifying?", choices:["Base salary from a full-time W-2 job","Part-time or overtime income","Social Security income","Pension income"], correct:1 },
+{ cat:"Underwriting", q:"An automated underwriting system (AUS) issues a 'Refer/Eligible' finding, which means:", choices:["The loan is automatically approved","The loan was referred for manual underwriting and the borrower may still qualify","The borrower is ineligible for the loan","The file needs additional collateral review only"], correct:1 },
+{ cat:"Underwriting", q:"The 'capital' component in the 4 C's of credit refers to:", choices:["The borrower's credit history","The borrower's assets and savings after closing","The property value relative to the loan","The borrower's income and employment"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following would most likely trigger manual underwriting on an FHA loan?", choices:["A 720 credit score with 10% down","A non-traditional credit borrower with no credit score","A self-employed borrower with stable 3-year history","A borrower with a prior employer-assisted sale"], correct:1 },
+{ cat:"Underwriting", q:"Gift funds for a down payment must be documented with:", choices:["A gift letter stating no repayment is expected, plus evidence of transfer","An IOU signed by the donor","A promissory note for repayment within 10 years","Lender approval of the donor's financial statements"], correct:0 },
+{ cat:"Underwriting", q:"The Mortgage Credit Certificate (MCC) provides qualifying borrowers with:", choices:["A reduction in the purchase price","A federal tax credit equal to a percentage of annual mortgage interest paid","A grant for down payment assistance","A reduction in property taxes"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following would be classified as a 'non-traditional credit' reference?", choices:["A FICO score below 580","Utility bills and rental payment history when no credit accounts exist","Income from self-employment","A co-signer's credit report"], correct:1 },
+{ cat:"Underwriting", q:"Compensating factors in FHA underwriting can include:", choices:["Proof of recent bankruptcy discharge","A high back-end DTI offset by significant cash reserves","A recent job change to a higher-paying position","All late payments being less than 60 days"], correct:1 },
+{ cat:"Underwriting", q:"What is the minimum required down payment for a conventional loan to avoid PMI?", choices:["10%","15%","20%","25%"], correct:2 },
+{ cat:"Underwriting", q:"A borrower's application shows $10,000/month gross income and $4,800/month in total housing and debt payments. Their DTI is:", choices:["42%","45%","48%","50%"], correct:2 },
+{ cat:"Underwriting", q:"Which of the following is NOT considered a standard monthly debt for DTI calculation?", choices:["Auto loan payment","Minimum credit card payment","Utility bills","Student loan payment"], correct:2 },
+{ cat:"Underwriting", q:"'Seasoned funds' in mortgage underwriting means:", choices:["Income that has been received for at least 2 years","Money that has been in the borrower's account for 60+ days","Gift funds documented with a letter","Retirement funds that can be withdrawn without penalty"], correct:1 },
+{ cat:"Underwriting", q:"A borrower has a 90-day late payment from 18 months ago. Under FHA guidelines, this would most likely:", choices:["Automatically disqualify the borrower","Be considered a significant derogatory event requiring documentation and explanation","Have no impact since it is more than 12 months old","Require a 12-month waiting period"], correct:1 },
+{ cat:"Underwriting", q:"The LTV ratio for a cash-out refinance is calculated using:", choices:["Original purchase price","Current appraised value","Lesser of purchase price or appraised value","Outstanding loan balance only"], correct:1 },
+{ cat:"Underwriting", q:"What does PITI stand for?", choices:["Principal, Income, Taxes, Insurance","Principal, Interest, Taxes, Insurance","Payment, Interest, Term, Investment","Principal, Interest, Term, Income"], correct:1 },
+{ cat:"Underwriting", q:"An appraisal uses the 'sales comparison approach' which involves:", choices:["Estimating value based on replacement cost of the structure","Capitalizing the property's rental income to determine value","Comparing the subject property to recently sold similar properties","Calculating the present value of future cash flows"], correct:2 },
+{ cat:"Underwriting", q:"For VA loans, the residual income requirement is based on:", choices:["The borrower's net income after housing expenses minus all other debts","The borrower's gross income minus all monthly debts","The total household income minus federal taxes","The difference between gross income and gross debts"], correct:0 },
+{ cat:"Underwriting", q:"A 'dry closing' occurs when:", choices:["The borrower doesn't attend the closing in person","The loan funds are not disbursed at the time of closing","The property has no plumbing","The appraisal is waived"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following best describes 'ability to repay' in mortgage underwriting?", choices:["A lender's requirement that borrowers maintain a reserve account","The lender's documented determination that the borrower has sufficient income and assets to repay the loan","The maximum loan amount a borrower can afford","A borrower's credit score above 720"], correct:1 },
+{ cat:"Underwriting", q:"An appraisal management company (AMC) is responsible for:", choices:["Determining the final appraised value","Ordering and managing appraisals independently from lenders to ensure AIR compliance","Underwriting the mortgage loan","Providing title insurance"], correct:1 },
+{ cat:"Underwriting", q:"When a borrower is changing jobs but staying in the same field, underwriters generally:", choices:["Always require 2 years at the new job before counting income","May accept the offer letter and verify prior 2-year history in the same field","Automatically deny the loan until 12 months at new job","Require a co-signer"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following is considered a 'soft inquiry' on a credit report?", choices:["Mortgage lender pulling credit for a loan application","Auto dealer running credit before financing","Borrower checking their own credit score","All hard inquiries"], correct:2 },
+{ cat:"Underwriting", q:"A borrower with a Chapter 7 bankruptcy must wait how long after discharge to qualify for an FHA loan?", choices:["1 year","2 years","3 years","4 years"], correct:1 },
+{ cat:"Underwriting", q:"A borrower with a Chapter 13 bankruptcy may qualify for an FHA loan after:", choices:["Discharge only, with a 2-year wait","1 year of satisfactory repayment with court approval, prior to discharge","2 years after filing, not discharge","Immediately after filing with court permission"], correct:1 },
+{ cat:"Underwriting", q:"For a conventional loan, a borrower who experienced a foreclosure must typically wait:", choices:["2 years","3 years","5 years (or 7 years without extenuating circumstances)","7 years with no exceptions"], correct:2 },
+{ cat:"Underwriting", q:"How long must a borrower wait after a short sale to be eligible for a new FHA loan (without extenuating circumstances)?", choices:["1 year","2 years","3 years","4 years"], correct:2 },
+{ cat:"Underwriting", q:"The purpose of a 'verification of employment' (VOE) is to:", choices:["Determine the borrower's credit score","Confirm the borrower's current employment status and income","Verify the property address","Confirm the borrower's bank account balances"], correct:1 },
+{ cat:"Underwriting", q:"Which credit score model is most commonly used in mortgage underwriting?", choices:["VantageScore 3.0","FICO Score 8","Classic FICO (versions 2, 4, and 5)","FICO Score 9"], correct:2 },
+{ cat:"Underwriting", q:"If a borrower has three credit scores from the three bureaus, which score is used?", choices:["The highest score","The lowest score","The middle score","The average of all three"], correct:2 },
+{ cat:"Underwriting", q:"The most heavily weighted factor in a FICO credit score is:", choices:["Amounts owed (30%)","Payment history (35%)","Credit mix (10%)","Length of credit history (15%)"], correct:1 },
+{ cat:"Underwriting", q:"A loan officer discovers after application that a borrower's income was lower than stated. The MLO should:", choices:["Proceed with closing and note the discrepancy","Not disclose and let the underwriter find it","Document the correct information and update the loan file","Withdraw the application without notice to the borrower"], correct:2 },
+{ cat:"Underwriting", q:"Which of the following is required to be on the 1003 loan application?", choices:["Borrower's marital history","Citizenship status declaration","Borrower's political affiliation","Parent's income"], correct:1 },
+{ cat:"Underwriting", q:"In the context of underwriting, 'layered risk' refers to:", choices:["Charging multiple fees on a loan","Multiple risk factors present simultaneously (e.g., high LTV + low credit score + self-employed)","A loan with multiple liens","An ARM loan with a short initial period"], correct:1 },
+{ cat:"Underwriting", q:"What is the maximum DTI for a VA loan under standard guidelines?", choices:["36%","41%","43%","50%"], correct:1 },
+{ cat:"Underwriting", q:"An MLO takes an application for a purchase loan. Which of the following would trigger a new 3-business-day waiting period before consummation under TRID?", choices:["Borrower's name is misspelled on the Closing Disclosure","APR increases by more than 0.125% after CD issuance","Estimated closing costs decrease by $200","Borrower's agent changes"], correct:1 },
+{ cat:"Underwriting", q:"'Desktop appraisal' means:", choices:["An appraisal conducted entirely from public records and MLS data without an interior inspection","An appraisal requiring a physical walkthrough","An appraisal prepared by a non-licensed appraiser","An appraisal completed at the lender's office"], correct:0 },
+{ cat:"Underwriting", q:"The purpose of a pest inspection on an FHA loan is:", choices:["Required on every FHA loan in every state","Required only when evidence of infestation is visible or in certain high-risk states","Optional and not relevant to FHA underwriting","Waived automatically for properties built after 1990"], correct:1 },
+{ cat:"Underwriting", q:"The 'sales contract' in a purchase transaction is important in underwriting because:", choices:["It sets the interest rate","It establishes the agreed purchase price used as a basis for LTV calculation","It replaces the need for an appraisal","It determines the borrower's credit eligibility"], correct:1 },
+{ cat:"Underwriting", q:"What does 'subordination' mean in the context of a second lien?", choices:["The second lien is paid off before the first lien","The second lien agrees to remain in a lower priority position behind the first lien","The first lien lender forgives the second lien","The second lien is converted to a first lien"], correct:1 },
+{ cat:"Underwriting", q:"A 'clear to close' (CTC) is issued by:", choices:["The title company","The real estate agent","The underwriter after all conditions are satisfied","The appraiser"], correct:2 },
+{ cat:"Underwriting", q:"In the loan process, 'processing' involves:", choices:["Evaluating the borrower's credit and income to approve the loan","Collecting documents, verifying information, and preparing the file for underwriting","Closing and funding the loan","Selling the loan to the secondary market"], correct:1 },
+{ cat:"Underwriting", q:"A 'commitment letter' from a lender means:", choices:["The loan is fully funded","The lender commits to funding the loan, subject to specific conditions","The lender guarantees the lowest rate available","The borrower cannot withdraw their application"], correct:1 },
+{ cat:"Underwriting", q:"After final loan approval, what is the last step before the loan funds?", choices:["The appraisal","Signing of closing documents (consummation)","Submission to the secondary market","Completion of the credit report"], correct:1 },
+{ cat:"Underwriting", q:"An MLO must provide a Loan Estimate to the borrower within 3 business days of application. A 'business day' for this purpose is defined as:", choices:["Monday through Friday excluding federal holidays","All calendar days except Sunday and federal holidays","Monday through Saturday excluding federal holidays","All calendar days"], correct:2 },
+{ cat:"Underwriting", q:"Which of the following assets can be used for the down payment and closing costs?", choices:["Unsecured personal loan proceeds","Borrowed funds from retirement with no repayment plan","Verified funds in a checking account for at least 60 days","An oral promise from a family member"], correct:2 },
+{ cat:"Underwriting", q:"PITI on a $300,000 loan at 7% for 30 years is approximately $1,996. With $400/mo in other debts and $7,000/mo gross income, the back-end DTI is approximately:", choices:["28%","34%","34.2%","34% — ($1,996+$400)/$7,000=34.2%"], correct:3 },
+{ cat:"Underwriting", q:"The three approaches to value in a real property appraisal are:", choices:["Sales comparison, income, and cost approaches","Market, net income, and replacement approaches","Comparable, discounted cash flow, and construction approaches","Broker price opinion, desk review, and field review"], correct:0 },
+{ cat:"Underwriting", q:"A field review appraisal involves:", choices:["Only a review of public records","A drive-by inspection of the exterior of the property","A full interior and exterior inspection","A desktop analysis of MLS data only"], correct:1 },
+{ cat:"Underwriting", q:"What is the primary purpose of a title search?", choices:["Verify the borrower's employment","Ensure the seller has clear title to convey and identify any liens or encumbrances","Determine the fair market value of the property","Confirm the property meets FHA minimum property standards"], correct:1 },
+{ cat:"Underwriting", q:"Title insurance protects:", choices:["Only the borrower against future title defects","Only the lender against pre-existing title defects","The lender (lender's policy) and optionally the buyer (owner's policy) against title defects","The title company against errors in the title search"], correct:2 },
+{ cat:"Underwriting", q:"Which of the following would cause an underwriter to condition a loan for additional documentation?", choices:["Credit score of 780","Large unexplained deposit in the borrower's bank account","DTI of 28%","LTV of 65%"], correct:1 },
+{ cat:"Underwriting", q:"When a lender orders an appraisal, who is the appraiser's client?", choices:["The borrower","The real estate agent","The lender","The state licensing board"], correct:2 },
+{ cat:"Underwriting", q:"Which of the following disclosures is NOT typically required at application?", choices:["Loan Estimate","Anti-coercion notice for insurance","Home Loan Toolkit (formerly Special Information Booklet)","Closing Disclosure"], correct:3 },
+{ cat:"Underwriting", q:"What is 'escrow' in a mortgage context?", choices:["A reserve account held by the lender to pay property taxes and insurance","A down payment held by the seller until closing","A trust fund for real estate commissions","A government account for PMI premium payments"], correct:0 },
+{ cat:"Underwriting", q:"A mortgage loan that closes with all required conditions satisfied is described as:", choices:["Subject to","Clear title","Closing with a clean CTC","Closing without conditions"], correct:2 },
+{ cat:"Underwriting", q:"Under the Homeowners Protection Act, a borrower may request PMI cancellation when LTV reaches:", choices:["85%","80%","78%","75%"], correct:1 },
+{ cat:"Underwriting", q:"A 'lender credit' on a Closing Disclosure:", choices:["Reduces the interest rate","Reduces the closing costs the borrower pays at closing, typically in exchange for a higher rate","Increases the loan amount","Is an illegal kickback under RESPA"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO classifies a rental property as a second home to help the borrower qualify. This is:", choices:["Predatory lending","Occupancy fraud","Straw buyer fraud","Property flipping"], correct:1 },
+{ cat:"Ethics & Fraud", q:"A SAR (Suspicious Activity Report) must be filed for suspicious transactions of:", choices:["$3,000 or more","$5,000 or more","$10,000 or more","$25,000 or more"], correct:1 },
+{ cat:"Ethics & Fraud", q:"A Currency Transaction Report (CTR) is required for cash transactions exceeding:", choices:["$5,000","$8,000","$10,000","$25,000"], correct:2 },
+{ cat:"Ethics & Fraud", q:"'Churning' refers to:", choices:["Steering borrowers to higher-cost loan products","Repeatedly refinancing a borrower's loan for no tangible benefit to them","Inflating property values through fraudulent appraisals","Using a straw buyer to obtain financing"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Under UDAAP, an 'abusive' act is one that:", choices:["Is technically legal but confusing to a reasonable consumer","Takes unreasonable advantage of a consumer's lack of understanding or inability to protect their interests","Charges fees that exceed the statutory maximum","Fails to provide a required disclosure on time"], correct:1 },
+{ cat:"Ethics & Fraud", q:"After filing a SAR, the MLO must:", choices:["Notify the borrower within 30 days","Inform the subject of the SAR immediately","Never disclose (tip off) the subject of the SAR","Report the filing to the state licensing authority"], correct:2 },
+{ cat:"Ethics & Fraud", q:"'Air loan' fraud involves:", choices:["Financing a property with no down payment","Creating fictitious properties and borrowers to obtain loans on non-existent real estate","Inflating the appraised value of a real property","Forging tax documents to qualify for a larger loan"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Fraud for profit is considered more serious than fraud for property because:", choices:["It involves larger loan amounts","It is orchestrated by industry insiders and involves complex schemes for financial gain","It cannot be detected by regulators","It always involves identity theft"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Illegal steering means:", choices:["Offering the borrower the best rate they qualify for","Directing a qualified borrower to a higher-cost loan when they qualify for better terms","Recommending a fixed rate for a risk-averse borrower","Advising a borrower to choose a shorter loan term"], correct:1 },
+{ cat:"Ethics & Fraud", q:"'Structuring' (also called 'smurfing') is:", choices:["Inflating income on a loan application","Breaking up large cash transactions into smaller ones specifically to avoid CTR filing requirements","Creating multiple LLCs to avoid income taxes","Splitting a loan into two separate loans to avoid disclosure limits"], correct:1 },
+{ cat:"Ethics & Fraud", q:"The USA PATRIOT Act requires financial institutions to establish a Customer Identification Program (CIP) to:", choices:["Verify borrower creditworthiness","Verify the identity of customers to prevent money laundering and terrorist financing","Report all real estate transactions to FinCEN","Screen for OFAC prohibited persons only"], correct:1 },
+{ cat:"Ethics & Fraud", q:"FinCEN stands for:", choices:["Financial Credit Enforcement Network","Financial Crimes Enforcement Network","Federal Credit Examination Network","Financial Consumer Education Network"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following is an example of appraisal fraud?", choices:["An appraiser who refuses to use comparable sales provided by the MLO","An appraiser who inflates the property value at the lender's request to justify a larger loan","An MLO who orders an independent AMC appraisal","A borrower who disagrees with the appraised value"], correct:1 },
+{ cat:"Ethics & Fraud", q:"'Dual contract' fraud involves:", choices:["A borrower having two loans on the same property","Using two separate contracts for the same transaction — one showing actual price, one inflated — to deceive the lender","An MLO working for two competing lenders","A seller refusing to disclose known property defects"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Under the SAFE Act and ethical guidelines, an MLO must disclose to a borrower:", choices:["The MLO's total compensation from the lender","The loan's interest rate and total costs in a Loan Estimate","All of the lender's competitors' rates","The MLO's personal credit score"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following best describes predatory lending?", choices:["Lending to borrowers who don't meet standard credit guidelines","Charging fees that are typical for the market","Using deceptive tactics or abusive loan terms to extract equity or charge excessive fees from borrowers","Offering loans in rural areas with limited competition"], correct:2 },
+{ cat:"Ethics & Fraud", q:"A lender that charges excessive fees to elderly borrowers, knowing they do not fully understand the loan terms, is engaging in:", choices:["Legal differential pricing","UDAP violation and elder financial exploitation","Acceptable risk-based pricing","Regulatory arbitrage"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Under BSA/AML requirements, what is the minimum holding period for SAR records?", choices:["1 year","3 years","5 years","7 years"], correct:2 },
+{ cat:"Ethics & Fraud", q:"A 'straw buyer' in mortgage fraud is:", choices:["A buyer who negotiates a below-market purchase price","A person who allows their identity and credit to be used by another party to obtain a mortgage fraudulently","A licensed real estate agent acting as a buyer's agent","A borrower with a high credit score who co-signs for a family member"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Property flipping fraud typically involves:", choices:["Selling a property the same day it was purchased","Quickly buying and reselling a property at an artificially inflated price using fraudulent appraisals","A borrower purchasing a bank-owned property at a discount","An investor purchasing multiple properties using legitimate financing"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO who receives a referral fee from a real estate attorney in exchange for recommending that attorney to borrowers is:", choices:["Acting ethically as long as both parties agree","Potentially violating RESPA Section 8","Compliant because attorneys are exempt from RESPA","Acting within normal industry practice"], correct:1 },
+{ cat:"Ethics & Fraud", q:"'Income fraud' in mortgage applications refers to:", choices:["A borrower accurately stating gross income","Misrepresenting, overstating, or fabricating income to qualify for a loan","A lender refusing to count non-taxable income","A self-employed borrower deducting business expenses"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following is NOT a red flag for mortgage fraud?", choices:["Borrower cannot explain large cash deposits","Sales price significantly above appraised value","Borrower provides pay stubs from a verifiable employer","All parties to the transaction are represented by the same attorney"], correct:2 },
+{ cat:"Ethics & Fraud", q:"The Bank Secrecy Act (BSA) requires financial institutions to assist government agencies in detecting and preventing:", choices:["Identity theft only","Money laundering and other financial crimes","Tax evasion only","Mortgage fraud only"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO's primary ethical obligation is to:", choices:["The lender who employs them","The real estate agent referring the borrower","The borrower, by acting in their best interest and ensuring suitability","The secondary market investor who buys the loan"], correct:2 },
+{ cat:"Ethics & Fraud", q:"Which of the following would be considered a UDAAP 'unfair' practice?", choices:["A lender clearly disclosing all loan fees in the Loan Estimate","A lender charging fees that are technically legal but impose unreasonable financial harm on consumers","A lender offering different interest rates based on risk-based pricing","An MLO recommending a 30-year over 15-year term"], correct:1 },
+{ cat:"Ethics & Fraud", q:"'Deceptive' under UDAAP means:", choices:["Making a representation that is technically accurate but likely to mislead a reasonable consumer","Charging fees above market rate","Failing to disclose the APR","Approving loans the lender knows will be foreclosed"], correct:0 },
+{ cat:"Ethics & Fraud", q:"Under the Code of Ethics for MLOs, when a conflict of interest arises, the MLO must:", choices:["Always favor the lender's financial interests","Disclose the conflict to all parties and, when necessary, withdraw from the transaction","Act in the real estate agent's best interest to maintain the referral relationship","Continue the transaction without disclosure if the MLO believes it is in the borrower's interest"], correct:1 },
+{ cat:"Ethics & Fraud", q:"OFAC (Office of Foreign Assets Control) requires lenders to:", choices:["Report all foreign national borrowers","Screen all loan participants against the Specially Designated Nationals (SDN) list","File a SAR for all transactions involving non-US citizens","Report all wire transfers above $3,000"], correct:1 },
+{ cat:"Ethics & Fraud", q:"'Equity stripping' is a predatory practice that:", choices:["Charges excessive fees to reduce a borrower's equity","Artificially inflates property value","Forces a borrower into a variable-rate loan","Requires unnecessary insurance products"], correct:0 },
+{ cat:"Ethics & Fraud", q:"A mortgage broker who locks in a loan at a higher rate than the borrower qualified for, to earn a larger YSP without disclosure, would be violating:", choices:["RESPA only","TILA Regulation Z and anti-steering rules","HMDA reporting requirements","Only state law"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following is considered 'chunking' in mortgage fraud?", choices:["Adding excessive junk fees to a loan","Convincing an investor to purchase multiple investment properties using false income documentation","Splitting one large transaction into multiple small ones","Using a property's equity to pay off unsecured debts"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO knowingly processes a loan application with fabricated income documents. This MLO could face:", choices:["Only a fine from the state licensing board","Criminal prosecution for bank fraud, civil liability, and loss of license","Only a warning letter from the CFPB","No consequences if the loan performs well"], correct:1 },
+{ cat:"Ethics & Fraud", q:"The minimum threshold for filing a SAR under BSA regulations is:", choices:["Any amount if fraud is suspected","$5,000 or more if the institution knows or suspects it involves illegal activity","$10,000 or more always","$25,000 or more"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which regulatory body specifically handles anti-money laundering enforcement for mortgage companies?", choices:["CFPB","FinCEN","HUD","FTC"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO is prohibited from accepting any gift or compensation from a settlement service provider unless:", choices:["The MLO discloses it verbally to the borrower","The compensation is in exchange for actual services rendered and is not a kickback","The gift is less than $25 in value","The lender gives written approval"], correct:1 },
+{ cat:"Ethics & Fraud", q:"A borrower tells an MLO that they plan to rent out the home they are purchasing but want to claim it as a primary residence on the application. The MLO should:", choices:["Record it as a primary residence since the borrower requested it","Decline to participate and explain that this would constitute occupancy fraud","Ask the borrower to provide a letter of intent to occupy","Report the conversation to the lender without informing the borrower"], correct:1 },
+{ cat:"Ethics & Fraud", q:"A lender who charges higher rates to minority borrowers compared to similarly qualified non-minority borrowers, without a legitimate business justification, may be guilty of:", choices:["Disparate impact only","Disparate treatment discrimination","Acceptable risk-based pricing","Only a UDAAP violation"], correct:1 },
+{ cat:"Ethics & Fraud", q:"When a real estate agent pressures an MLO to find a way to approve a loan for an unqualified borrower, the MLO should:", choices:["Try to find compensating factors to make the loan work","Refuse and explain that approving an unqualified borrower could constitute fraud","Refer the agent to a different lender","Ask the borrower to add a co-signer without underwriting review"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO who intentionally misrepresents the terms of a loan to a borrower to complete a transaction is guilty of:", choices:["A minor regulatory infraction","Fraud and potential criminal conduct","Steering only","Only a RESPA violation"], correct:1 },
+{ cat:"Ethics & Fraud", q:"What is 'identity theft' in the mortgage fraud context?", choices:["A borrower lying about their income","Using another person's identity and personal information to obtain a mortgage without their knowledge","A lender using a borrower's information for marketing without consent","A co-borrower removing themselves after closing"], correct:1 },
+{ cat:"SAFE Act", q:"The SAFE Act was signed into law on:", choices:["July 30, 2006","July 30, 2008","January 1, 2010","July 21, 2010"], correct:1 },
+{ cat:"SAFE Act", q:"How many hours of pre-licensing education are required under the SAFE Act?", choices:["8 hours","16 hours","20 hours","24 hours"], correct:2 },
+{ cat:"SAFE Act", q:"The annual continuing education requirement for MLOs under the SAFE Act is:", choices:["3 hours","6 hours","8 hours","12 hours"], correct:2 },
+{ cat:"SAFE Act", q:"The passing score for the SAFE MLO National exam is:", choices:["70%","72%","75%","80%"], correct:2 },
+{ cat:"SAFE Act", q:"After failing the SAFE exam three times, a candidate must wait how long before their next attempt?", choices:["30 days","60 days","90 days","180 days"], correct:3 },
+{ cat:"SAFE Act", q:"Temporary MLO authority allows an eligible MLO to originate loans for up to:", choices:["60 days","90 days","120 days","180 days"], correct:2 },
+{ cat:"SAFE Act", q:"Which of the following does NOT require an MLO license under the SAFE Act?", choices:["An independent loan processor who exercises independent judgment","A mortgage broker who takes loan applications","A loan officer at a federally chartered bank registered with NMLS","An MLO at a non-bank lender"], correct:2 },
+{ cat:"SAFE Act", q:"The SAFE exam consists of how many total questions?", choices:["100","115","125","150"], correct:2 },
+{ cat:"SAFE Act", q:"The SAFE Act established the Nationwide Multistate Licensing System (NMLS) to:", choices:["Set interest rate caps for all mortgage loans","Create a database of licensed MLOs and streamline the licensing process across states","Replace state licensing with a single federal license","Regulate real estate agents and brokers nationwide"], correct:1 },
+{ cat:"SAFE Act", q:"Under the SAFE Act, an MLO must be employed by:", choices:["Any financial institution or individual","A state-licensed mortgage company or federally chartered institution","Only a federally chartered bank","Only a state-licensed mortgage broker"], correct:1 },
+{ cat:"SAFE Act", q:"The 20 hours of pre-licensing education required by the SAFE Act must include at least how many hours of federal law?", choices:["1 hour","2 hours","3 hours","4 hours"], correct:2 },
+{ cat:"SAFE Act", q:"Under the SAFE Act, which of the following is a requirement for MLO license renewal?", choices:["Re-taking the SAFE exam every 3 years","Completing 8 hours of continuing education annually","Completing a new background check annually","Retaking the pre-licensing course every 5 years"], correct:1 },
+{ cat:"SAFE Act", q:"An MLO who allows someone else to use their NMLS credentials to originate loans is:", choices:["Acting legally as long as they supervise the transaction","Engaging in unlicensed mortgage activity and violating the SAFE Act","Permitted if the person is a licensed real estate agent","Compliant if the arrangement is disclosed to the borrower"], correct:1 },
+{ cat:"SAFE Act", q:"Which of the following is required as part of an MLO license application under the SAFE Act?", choices:["Minimum 2 years of mortgage experience","FBI fingerprint-based criminal background check","Minimum net worth of $50,000","Proof of real estate license"], correct:1 },
+{ cat:"SAFE Act", q:"The 8 hours of annual SAFE Act continuing education must include:", choices:["3 hours federal law, 2 hours ethics, 2 hours non-traditional mortgage products, 1 hour elective","3 hours federal law, 3 hours ethics, 2 hours elective","5 hours federal law, 3 hours elective","4 hours state law, 4 hours ethics"], correct:0 },
+{ cat:"SAFE Act", q:"A 'loan originator' under the SAFE Act includes anyone who:", choices:["Works in the mortgage industry in any capacity","Takes a residential mortgage loan application OR offers or negotiates loan terms for compensation","Processes or underwrites mortgage applications","Works as a licensed real estate appraiser"], correct:1 },
+{ cat:"SAFE Act", q:"Under the SAFE Act, how long after failing the SAFE exam twice must a candidate wait before the third attempt?", choices:["24 hours","30 days","60 days","180 days"], correct:1 },
+{ cat:"SAFE Act", q:"A federally registered MLO employed by a bank must register with NMLS but is:", choices:["Not required to complete any continuing education","Not required to pass the SAFE licensing exam","Exempt from all state licensing requirements","Required to obtain a state license in every state they originate loans"], correct:1 },
+{ cat:"SAFE Act", q:"The Secure and Fair Enforcement for Mortgage Licensing Act (SAFE Act) was enacted as part of:", choices:["Dodd-Frank Wall Street Reform Act","Housing and Economic Recovery Act (HERA) of 2008","Gramm-Leach-Bliley Act","Truth in Lending Act amendments"], correct:1 },
+{ cat:"SAFE Act", q:"Under the SAFE Act, an MLO's NMLS Unique Identifier must be:", choices:["Used only for federal loan applications","Disclosed on all loan applications and advertising","Kept confidential to prevent fraud","Renewed annually with a new number"], correct:1 },
+{ cat:"Federal Laws", q:"Under RESPA, which entity enforces violations of Section 8 kickback prohibitions?", choices:["OCC","CFPB","HUD","FTC"], correct:1 },
+{ cat:"Federal Laws", q:"A 'business day' for the purpose of the 3-day waiting period after receiving a Closing Disclosure is defined as:", choices:["Monday through Friday only","All calendar days except Sunday and federal holidays","Monday through Saturday excluding federal holidays","Any day the lender is open"], correct:2 },
+{ cat:"Federal Laws", q:"Which federal law requires lenders to provide the 'Your Home Loan Toolkit' booklet?", choices:["TILA","RESPA","ECOA","FCRA"], correct:1 },
+{ cat:"Loan Types", q:"What is a 'non-conforming' loan?", choices:["A loan that does not meet Fannie Mae or Freddie Mac purchase guidelines","A loan with an adjustable interest rate","A loan made to a non-US citizen","A loan for a commercial property"], correct:0 },
+{ cat:"Loan Types", q:"In a fixed-rate mortgage amortization, early payments are:", choices:["Mostly principal","Mostly interest","Equally split between principal and interest","Entirely principal"], correct:1 },
+{ cat:"Loan Types", q:"A 'portfolio loan' is best described as:", choices:["A loan backed by the borrower's investment portfolio","A loan the lender retains on its own balance sheet rather than selling to the secondary market","A loan for multiple properties purchased simultaneously","A jumbo loan above $2 million"], correct:1 },
+{ cat:"Loan Types", q:"Which type of mortgage provides the most payment certainty for a borrower?", choices:["5/1 ARM","30-year fixed rate","Interest-only ARM","Balloon mortgage"], correct:1 },
+{ cat:"Loan Types", q:"A seller who provides financing directly to the buyer without using a bank is offering:", choices:["An FHA assumption","Seller financing or owner financing","A bridge loan","A hard money loan"], correct:1 },
+{ cat:"Underwriting", q:"When a borrower has significant student loan debt in deferment, FHA requires the lender to count a monthly payment equal to:", choices:["0, since it is deferred","1% of the outstanding balance","The actual payment on the credit report","$500 regardless of balance"], correct:1 },
+{ cat:"Underwriting", q:"Which of the following income sources does NOT require a 2-year history for mortgage qualification?", choices:["Self-employment income","Part-time income","Commission income","Base salary from a full-time W-2 position held for 30 days with prior 2-year field history"], correct:3 },
+{ cat:"Underwriting", q:"'Disaster relief' extenuating circumstances can reduce the standard waiting period after foreclosure. For FHA, this minimum becomes:", choices:["1 year with documented extenuating circumstances","2 years","3 years","No reduction is allowed"], correct:0 },
+{ cat:"Underwriting", q:"The purpose of lender's title insurance is to:", choices:["Protect the lender against future zoning changes","Protect the lender against losses due to title defects that existed before the loan was made","Guarantee the borrower's equity","Protect the borrower against the lender's default"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following would be an example of a UDAAP 'deceptive' practice in advertising?", choices:["Displaying the APR prominently in an ad","Advertising a teaser rate without clearly disclosing it is temporary or subject to change","Showing multiple loan options to the borrower","Providing a Loan Estimate within 3 business days"], correct:1 },
+{ cat:"Ethics & Fraud", q:"An MLO must disclose their NMLS ID number on:", choices:["Only their business card","Only the Loan Estimate","All advertising and consumer-facing documents","Only the final Closing Disclosure"], correct:2 },
+{ cat:"Ethics & Fraud", q:"Under the SAFE Act, an MLO convicted of a felony involving fraud, dishonesty, or breach of trust:", choices:["Must wait 7 years before applying for a license","Is permanently barred from obtaining an MLO license","May apply after 5 years if fully rehabilitated","Must obtain a waiver from HUD"], correct:1 },
+{ cat:"SAFE Act", q:"Under the SAFE Act, which of the following is an acceptable alternative to passing the national exam for an MLO switching from a bank to a non-bank in the same state?", choices:["3 years of banking experience","Reciprocity agreement between states","The MLO must pass the national SAFE exam — there is no alternative","Completing 40 hours of additional continuing education"], correct:2 },
+{ cat:"Federal Laws", q:"Under HMDA, lenders are required to report which of the following types of property transactions?", choices:["Only purchase transactions","Only refinance transactions","Purchase, refinance, and home improvement loans on 1-4 unit residential properties","Commercial and multi-family loans only"], correct:2 },
+{ cat:"Loan Types", q:"The Freddie Mac automated underwriting system is called:", choices:["Desktop Underwriter (DU)","Loan Prospector (LP) / Loan Product Advisor (LPA)","GUS (Guaranteed Underwriting System)","TOTAL Scorecard"], correct:1 },
+{ cat:"Underwriting", q:"A 'correspondent lender' funds loans with its own money and then sells them to a wholesale lender or directly to the secondary market. This differs from a mortgage broker because:", choices:["Correspondent lenders cannot originate FHA loans","Correspondent lenders fund and close loans in their own name","Mortgage brokers have higher capital requirements","Correspondent lenders do not need NMLS licenses"], correct:1 },
+{ cat:"Ethics & Fraud", q:"Which of the following activities is legal under RESPA?", choices:["Paying a real estate agent a fee purely for referring a borrower","Paying a marketing services agreement (MSA) fee that is proportional to actual marketing services provided","Offering a title company a referral fee for closing the loan","Splitting a title insurance premium with a referring agent"], correct:1 },
+      ];
+
+      // Generate balanced 10-question set (2-3 per category)
+      const generatePracticeSet = React.useCallback(() => {
+        const cats = ["Federal Laws","Loan Types","Underwriting","Ethics & Fraud","SAFE Act"];
+        const targets = [3, 2, 2, 2, 1]; // 10 total — mirrors real NMLS ratio (24%/20%/27%/18%/11%)
+        const selected = [];
+        cats.forEach((cat, i) => {
+          const pool = ALL_QUESTIONS.filter(q => q.cat === cat);
+          const shuffled = [...pool].sort(() => Math.random() - 0.5);
+          selected.push(...shuffled.slice(0, targets[i]));
+        });
+        // Shuffle final order
+        return selected.sort(() => Math.random() - 0.5).map(q => ({
+          ...q,
+          // Shuffle choices while tracking correct answer
+          shuffled: (() => {
+            const indices = [0,1,2,3];
+            indices.sort(() => Math.random() - 0.5);
+            return {
+              choices: indices.map(i => q.choices[i]),
+              correct: indices.indexOf(q.correct),
+            };
+          })(),
+        }));
+      }, []);
+
+      // Initialize practice on mount and when tab switches to practice
+      const initPractice = React.useCallback(() => {
+        setPracticeQuestions(generatePracticeSet());
+        setPracticeAnswers({});
+        setPracticeSubmitted(false);
+      }, [generatePracticeSet]);
+
+      React.useEffect(() => {
+        if (activeTab === "practice") initPractice();
+      }, [activeTab]);
+
+      const handlePracticeAnswer = (qIdx, choiceIdx) => {
+        if (practiceAnswers[qIdx] !== undefined) return; // already answered
+        setPracticeAnswers(prev => ({ ...prev, [qIdx]: choiceIdx }));
+      };
+
+      const submitPractice = () => {
+        const score = practiceQuestions.reduce((acc, q, i) =>
+          acc + (practiceAnswers[i] === q.shuffled.correct ? 1 : 0), 0);
+        const total = practiceQuestions.length;
+        const pct = Math.round(score / total * 100);
+        const entry = {
+          date: new Date().toLocaleString(),
+          score, total, pct,
+          cats: practiceQuestions.map((q, i) => ({
+            cat: q.cat,
+            correct: practiceAnswers[i] === q.shuffled.correct,
+          })),
+        };
+        setScoreHistory(prev => [entry, ...prev.slice(0, 19)]);
+        setPracticeSubmitted(true);
+      };
+
+      const catColors = {
+        "Federal Laws":   "#4a9eff",
+        "Loan Types":     "#ffcc4a",
+        "Underwriting":   "#4ad4ff",
+        "Ethics & Fraud": "#ff6b35",
+        "SAFE Act":       "#c44aff",
+      };
+
+      // ── Normalize abbreviations for natural TTS pronunciation ────────────────
+      const normalizeTTS = (text) => {
+        // Pattern: phonetic-acronym, Full Name,
+        // Lowercase acronym = TTS reads as a word (not letter-by-letter)
+        const replacements = [
+          // Word-like acronyms — TTS already handles naturally, keep as-is
+          [/\bTRID\b/g,    "Trid"],
+          [/\bRESPA\b/g,   "Respa"],
+          [/\bTILA\b/g,    "Tyla"],
+          [/\bHOEPA\b/g,   "Hoepa"],
+          [/\bHELOC\b/g,   "Heelock"],
+          [/\bFHA\b/g,     "F H A"],
+          [/\bHUD\b/g,     "Hud"],
+          [/\bVA\b/g,      "V A"],
+          [/\bARMs\b/g,    "arm loans"],
+          [/\bARM\b/g,     "arm"],
+
+          // Acronym spoken as word + full expansion
+          [/\bSSN\b/g,     "S S N, Social Security Number,"],
+          [/\bMLOs\b/g,    "M L Os, mortgage loan originators,"],
+          [/\bMLO\b/g,     "M L O, mortgage loan originator,"],
+          [/\bNMLS\b/g,    "N M L S, Nationwide Multistate Licensing System,"],
+          [/\bCFPB\b/g,    "C F P B, Consumer Financial Protection Bureau,"],
+          [/\bHMDA\b/g,    "Hmda, Home Mortgage Disclosure Act,"],
+          [/\bECOA\b/g,    "Ecoa, Equal Credit Opportunity Act,"],
+          [/\bHECM\b/g,    "Heckm, Home Equity Conversion Mortgage,"],
+          [/\bUSDA\b/g,    "Usda, US Department of Agriculture,"],
+          [/\bFNMA\b/g,    "Fannie Mae,"],
+          [/\bFHLMC\b/g,   "Freddie Mac,"],
+          [/\bGNMA\b/g,    "Ginnie Mae,"],
+          [/\bFHFA\b/g,    "F H F A, Federal Housing Finance Agency,"],
+          [/\bDTI\b/g,     "D T I, debt-to-income ratio,"],
+          [/\bCLTV\b/g,    "C L T V, combined loan-to-value,"],
+          [/\bLTV\b/g,     "L T V, loan-to-value,"],
+          [/\bPMI\b/g,     "P M I, private mortgage insurance,"],
+          [/\bMIP\b/g,     "M I P, mortgage insurance premium,"],
+          [/\bMBS\b/g,     "M B S, mortgage-backed securities,"],
+          [/\bGSEs\b/g,    "G S Es, government-sponsored enterprises,"],
+          [/\bGSE\b/g,     "G S E, government-sponsored enterprise,"],
+          [/\bAPR\b/g,     "A P R, annual percentage rate,"],
+          [/\bATR\b/g,     "A T R, ability to repay,"],
+          [/\bQM\b/g,      "Q M, qualified mortgage,"],
+          [/\bPITI\b/g,    "P I T I, principal interest taxes and insurance,"],
+          [/\bCOE\b/g,     "C O E, Certificate of Eligibility,"],
+          [/\bGLB\b/g,     "G L B, Gramm-Leach-Bliley Act,"],
+          [/\bFCRA\b/g,    "F C R A, Fair Credit Reporting Act,"],
+          [/\bFACTA\b/g,   "Facta, Fair and Accurate Credit Transactions Act,"],
+          [/\bCRA\b/g,     "C R A, Community Reinvestment Act,"],
+          [/\bLAR\b/g,     "L A R, Loan Application Register,"],
+          [/\bSAR\b/g,     "S A R, Suspicious Activity Report,"],
+          [/\bCTR\b/g,     "C T R, Currency Transaction Report,"],
+          [/\bBSA\b/g,     "B S A, Bank Secrecy Act,"],
+          [/\bAML\b/g,     "A M L, anti-money laundering,"],
+          [/\bUDAAP\b/g,   "Udaap, unfair deceptive or abusive acts or practices,"],
+          [/\bUDAP\b/g,    "Udap, unfair or deceptive acts or practices,"],
+          [/\bCIP\b/g,     "C I P, Customer Identification Program,"],
+          [/\bFinCEN\b/g,  "Fincen, Financial Crimes Enforcement Network,"],
+          [/\bUSPAP\b/g,   "Uspap, Uniform Standards of Professional Appraisal Practice,"],
+          [/\bURAR\b/g,    "U R A R, Uniform Residential Appraisal Report,"],
+          [/\bAMC\b/g,     "A M C, appraisal management company,"],
+          [/\bBPO\b/g,     "B P O, broker price opinion,"],
+          [/\bAIR\b/g,     "A I R, Appraiser Independence Requirements,"],
+          [/\bAFBA\b/g,    "A F B A, affiliated business arrangement,"],
+          [/\bIRRRL\b/g,   "Irrrl, interest rate reduction refinance loan,"],
+          [/\bCE\b/g,      "C E, continuing education,"],
+          [/\bW-2\b/g,     "W 2"],
+          [/\b1040\b/g,    "ten forty"],
+          // Symbols
+          [/≥/g,   " or more "],
+          [/≤/g,   " or less "],
+          [/>/g,   " greater than "],
+          [/</g,   " less than "],
+          [/÷/g,   " divided by "],
+          [/×/g,   " times "],
+          [/\$/g,  " dollar "],
+          [/%/g,   " percent "],
+          [/&/g,   " and "],
+          [/—/g,   ". "],
+          [/\//g,  " or "],
+        ];
+
+        let result = text;
+        for (const [pattern, replacement] of replacements) {
+          result = result.replace(pattern, replacement);
+        }
+        return result;
+      };
+
+      // Fetch TTS audio from Google Cloud and return blob URL
+      const fetchTTS = async (text, voiceName, speed) => {
+        const normalizedText = normalizeTTS(text);
+        const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${GCP_API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            input: { text: normalizedText },
+            voice: { languageCode: "en-US", name: voiceName },
+            audioConfig: { audioEncoding: "MP3", speakingRate: speed },
+          }),
+        });
+        if (!res.ok) { const err = await res.json(); throw new Error(err.error?.message || "TTS API error"); }
+        const data = await res.json();
+        const bytes = Uint8Array.from(atob(data.audioContent), c => c.charCodeAt(0));
+        const blob = new Blob([bytes], { type: "audio/mp3" });
+        return URL.createObjectURL(blob);
+      };
+
+      const stopSpeaking = () => {
+        stoppedRef.current = true;
+        pausedRef.current = false;
+        playingRef.current = false;
+        if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
+        setSpeaking(false); setPaused(false); setLoading(false);
+        setCurrentLabel(""); setHighlightedFact(null);
+      };
+
+      const pauseResume = () => {
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (pausedRef.current) {
+          // Resume
+          audio.play();
+          pausedRef.current = false;
+          setPaused(false);
+        } else {
+          // Pause
+          audio.pause();
+          pausedRef.current = true;
+          setPaused(true);
+        }
+      };
+
+      // Play a queue of { text, sectionId, itemIdx, factIdx } segments sequentially
+      const playQueue = async (queue, label) => {
+        stoppedRef.current = false;
+        pausedRef.current = false;
+        playingRef.current = true;
+        setSpeaking(true); setPaused(false); setLoading(true); setCurrentLabel(label);
+
+        for (let i = 0; i < queue.length; i++) {
+          if (stoppedRef.current) break;
+
+          // Wait while paused before fetching next segment
+          while (pausedRef.current && !stoppedRef.current) {
+            await new Promise(r => setTimeout(r, 100));
+          }
+          if (stoppedRef.current) break;
+
+          const seg = queue[i];
+          try {
+            const url = await fetchTTS(seg.text, voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(url); break; }
+            setLoading(false);
+            if (seg.factIdx !== undefined) setHighlightedFact({ sectionId: seg.sectionId, itemIdx: seg.itemIdx, factIdx: seg.factIdx });
+            else setHighlightedFact(null);
+
+            await new Promise((resolve, reject) => {
+              const audio = new Audio(url);
+              audioRef.current = audio;
+              audio.onended = () => { URL.revokeObjectURL(url); resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(url); reject(); };
+              audio.play();
+            });
+
+            // After audio ends, clear the ref
+            audioRef.current = null;
+          } catch(e) {
+            if (!stoppedRef.current) { alert("TTS Error: " + e.message); stopSpeaking(); break; }
+          }
+        }
+        if (!stoppedRef.current) {
+          setSpeaking(false); setLoading(false); setCurrentLabel(""); setHighlightedFact(null);
+          playingRef.current = false; pausedRef.current = false;
+        }
+      };
+
+      const speak = (text, label) => {
+        stopSpeaking();
+        setTimeout(() => playQueue([{ text }], label), 50);
+      };
+
+      const speakSection = (section) => {
+        stopSpeaking();
+        const queue = [];
+        section.items.forEach((item, itemIdx) => {
+          queue.push({ text: `${item.title}. Memory trick: ${item.mnemonic}.` });
+          item.facts.forEach((fact, factIdx) => {
+            queue.push({ text: fact, sectionId: section.id, itemIdx, factIdx });
+          });
+        });
+        setTimeout(() => playQueue(queue, section.title), 50);
+      };
+
+      const speakItem = (item, sectionId, itemIdx) => {
+        stopSpeaking();
+        const queue = [{ text: `${item.title}. Memory trick: ${item.mnemonic}.` }];
+        item.facts.forEach((fact, factIdx) => {
+          queue.push({ text: fact, sectionId, itemIdx, factIdx });
+        });
+        setTimeout(() => playQueue(queue, item.title), 50);
+      };
+
+      // Convert flashcard key into a natural exam question
+      const toQuestion = (q) => {
+        const map = {
+          "SAFE Act signed":               "When was the SAFE Act signed into law?",
+          "Pre-licensing hours":           "How many pre-licensing education hours are required?",
+          "CE hours annual":               "How many continuing education hours are required each year?",
+          "SAFE test passing score":       "What is the passing score for the SAFE exam?",
+          "SAFE exam questions":           "How many questions are on the SAFE exam?",
+          "SAFE exam time limit":          "How much time is allowed for the SAFE exam?",
+          "Loan Estimate delivery":        "When must the Loan Estimate be delivered to the borrower?",
+          "Closing Disclosure delivery":   "When must the Closing Disclosure be delivered before closing?",
+          "Right of rescission":           "How long is the right of rescission period?",
+          "Extended rescission (no disclosure)": "How long is the extended right of rescission when disclosures were not provided?",
+          "FHA min down payment":          "What is the minimum down payment for an FHA loan?",
+          "FHA upfront MIP":               "What is the FHA upfront mortgage insurance premium rate?",
+          "FHA annual MIP (typical)":      "What is the typical FHA annual mortgage insurance premium for a 30-year loan?",
+          "VA down payment":               "What is the required down payment for a VA loan?",
+          "VA funding fee (1st use, 0% down)": "What is the VA funding fee for first-time use with no down payment?",
+          "USDA down payment":             "What is the required down payment for a USDA loan?",
+          "USDA upfront guarantee fee":    "What is the USDA upfront guarantee fee?",
+          "USDA annual fee":               "What is the USDA annual guarantee fee?",
+          "Conforming loan limit 2026":    "What is the conforming loan limit for 2026?",
+          "High-cost area ceiling 2026":   "What is the high-cost area loan limit ceiling for 2026?",
+          "PMI auto-cancel LTV":           "At what loan-to-value ratio does PMI automatically cancel?",
+          "Max QM DTI":                    "What is the maximum debt-to-income ratio for a Qualified Mortgage?",
+          "RESPA escrow cushion max":      "What is the maximum escrow cushion allowed under RESPA?",
+          "RESPA escrow surplus refund trigger": "What is the minimum escrow surplus that triggers a required refund?",
+          "Adverse action notice":         "How many days does a lender have to send an adverse action notice?",
+          "ECOA recordkeeping":            "How long must lenders retain records under ECOA?",
+          "Reverse mortgage min age":      "What is the minimum age to qualify for a reverse mortgage?",
+          "HECM upfront MIP":              "What is the upfront mortgage insurance premium for a HECM reverse mortgage?",
+          "HECM annual MIP":               "What is the annual mortgage insurance premium for a HECM reverse mortgage?",
+          "Temporary MLO authority":       "How many days of temporary MLO authority are allowed under the SAFE Act?",
+          "SAR filing threshold":          "At what dollar amount must a Suspicious Activity Report be filed?",
+          "CTR filing threshold":          "At what dollar amount must a Currency Transaction Report be filed?",
+          "HMDA asset threshold 2026":     "What is the HMDA asset exemption threshold for 2026?",
+          "Servicing transfer notice":     "How far in advance must borrowers be notified of a loan servicing transfer?",
+          "HOEPA high-cost threshold (1st lien)": "What is the APR threshold that triggers HOEPA high-cost classification for a first lien?",
+          "QM max points & fees":          "What is the maximum points and fees allowed for a Qualified Mortgage?",
+        };
+        return map[q] || `What is the ${q}?`;
+      };
+
+      // Generate a short beep WAV blob URL
+      const makeBeepUrl = () => {
+        const sampleRate = 22050;
+        const duration = 0.15;
+        const freq = 880;
+        const numSamples = Math.floor(sampleRate * duration);
+        const buffer = new ArrayBuffer(44 + numSamples * 2);
+        const view = new DataView(buffer);
+        const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+        writeStr(0, 'RIFF'); view.setUint32(4, 36 + numSamples * 2, true);
+        writeStr(8, 'WAVE'); writeStr(12, 'fmt ');
+        view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true);
+        view.setUint32(24, sampleRate, true); view.setUint32(28, sampleRate * 2, true);
+        view.setUint16(32, 2, true); view.setUint16(34, 16, true);
+        writeStr(36, 'data'); view.setUint32(40, numSamples * 2, true);
+        for (let i = 0; i < numSamples; i++) {
+          const t = i / sampleRate;
+          const envelope = Math.min(1, t * 60) * Math.max(0, 1 - t / duration * 1.5);
+          const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.7 * 32767;
+          view.setInt16(44 + i * 2, sample, true);
+        }
+        return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
+      };
+
+      // Wait ms, respecting pause and stop
+      const waitMs = (ms) => new Promise(resolve => {
+        let elapsed = 0;
+        const tick = setInterval(() => {
+          if (stoppedRef.current) { clearInterval(tick); resolve(); return; }
+          if (!pausedRef.current) elapsed += 50;   // only count time when NOT paused
+          if (elapsed >= ms) { clearInterval(tick); resolve(); }
+        }, 50);
+      });
+
+      // Play one beep, respecting stop (pause mid-beep handled by audioRef)
+      const playOneBeep = () => new Promise(resolve => {
+        const url = makeBeepUrl();
+        const audio = new Audio(url);
+        audioRef.current = audio;
+        audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; resolve(); };
+        audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; resolve(); };
+        audio.play();
+      });
+
+      // Beep x3 with gaps, then ~2.5s thinking silence — all pause-aware
+      const playBeepPause = async () => {
+        for (let i = 0; i < 3; i++) {
+          if (stoppedRef.current) return;
+          // Wait while paused before each beep
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) return;
+          await playOneBeep();
+          if (i < 2) await waitMs(420);  // gap between beeps
+        }
+        // Thinking silence after 3rd beep
+        await waitMs(2500);
+      };
+
+      const speakFlashcard = async (fact) => {
+        stopSpeaking();
+        await new Promise(r => setTimeout(r, 60));
+        stoppedRef.current = false;
+        pausedRef.current = false;
+        setSpeaking(true); setLoading(true); setCurrentLabel(fact.q);
+
+        try {
+          // 1. Fetch question audio
+          const qUrl = await fetchTTS(toQuestion(fact.q), voiceSettings.voice, voiceSettings.speed);
+          if (stoppedRef.current) { URL.revokeObjectURL(qUrl); return; }
+          setLoading(false);
+
+          // Wait if paused before playing
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) { URL.revokeObjectURL(qUrl); return; }
+
+          await new Promise((resolve, reject) => {
+            const audio = new Audio(qUrl);
+            audioRef.current = audio;
+            audio.onended = () => { URL.revokeObjectURL(qUrl); audioRef.current = null; resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(qUrl); audioRef.current = null; reject(); };
+            audio.play();
+          });
+          if (stoppedRef.current) return;
+
+          // 2. Beep x3 + thinking pause
+          await playBeepPause();
+          if (stoppedRef.current) return;
+
+          // 3. Wait if paused before fetching answer
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) return;
+
+          // 4. Fetch and play answer
+          setLoading(true);
+          const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
+          if (stoppedRef.current) { URL.revokeObjectURL(aUrl); return; }
+          setLoading(false);
+
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) { URL.revokeObjectURL(aUrl); return; }
+
+          await new Promise((resolve, reject) => {
+            const audio = new Audio(aUrl);
+            audioRef.current = audio;
+            audio.onended = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; reject(); };
+            audio.play();
+          });
+        } catch(e) {
+          if (!stoppedRef.current) console.error("Flashcard TTS error:", e);
+        } finally {
+          if (!stoppedRef.current) {
+            setSpeaking(false); setLoading(false); setCurrentLabel("");
+          }
+        }
+      };
+
+      const speakAllFlashcards = async () => {
+        stopSpeaking();
+        await new Promise(r => setTimeout(r, 60));
+        stoppedRef.current = false;
+        pausedRef.current = false;
+        setSpeaking(true); setLoading(true); setCurrentLabel("All Flashcards");
+
+        for (let i = 0; i < quickFacts.length; i++) {
+          if (stoppedRef.current) break;
+
+          // Wait while paused
+          while (pausedRef.current && !stoppedRef.current) {
+            await new Promise(r => setTimeout(r, 100));
+          }
+          if (stoppedRef.current) break;
+
+          const fact = quickFacts[i];
+          setCurrentLabel(`Q${i + 1}: ${fact.q}`);
+
+          try {
+            // Question
+            const qUrl = await fetchTTS(toQuestion(fact.q), voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(qUrl); break; }
+            setLoading(false);
+            await new Promise((resolve, reject) => {
+              const audio = new Audio(qUrl);
+              audioRef.current = audio;
+              audio.onended = () => { URL.revokeObjectURL(qUrl); resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(qUrl); reject(); };
+              audio.play();
+            });
+            audioRef.current = null;
+            if (stoppedRef.current) break;
+
+            // Beep + pause
+            await playBeepPause();
+            if (stoppedRef.current) break;
+
+            // Answer
+            while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+            if (stoppedRef.current) break;
+            setLoading(true);
+            const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(aUrl); break; }
+            setLoading(false);
+            while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+            if (stoppedRef.current) { URL.revokeObjectURL(aUrl); break; }
+            await new Promise((resolve, reject) => {
+              const audio = new Audio(aUrl);
+              audioRef.current = audio;
+              audio.onended = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; reject(); };
+              audio.play();
+            });
+            audioRef.current = null;
+
+            // Short gap between cards
+            await new Promise(r => setTimeout(r, 800));
+          } catch(e) {
+            if (!stoppedRef.current) console.error("Flashcard TTS error:", e);
+          }
+        }
+
+        if (!stoppedRef.current) {
+          setSpeaking(false); setLoading(false); setCurrentLabel("");
+          playingRef.current = false;
+        }
+      };
+
+      const speakCheatSheet = () => {
+        speak([
+          "Critical Numbers Cheat Sheet for 2026.",
+          "20 hours, Pre-licensing education.",
+          "8 hours, Annual CE.",
+          "75 percent, SAFE exam passing score.",
+          "3 business days, Loan Estimate delivery.",
+          "3 business days before closing, Closing Disclosure.",
+          "3.5 percent, FHA minimum down payment.",
+          "1.75 percent, FHA upfront MIP.",
+          "0.55 percent, FHA annual MIP for most 30-year borrowers.",
+          "832,750 dollars, 2026 conforming loan limit.",
+          "1,249,125 dollars, 2026 high-cost area ceiling.",
+          "78 percent LTV, PMI auto-cancellation.",
+          "43 percent, Maximum QM DTI.",
+          "2 months, Maximum RESPA escrow cushion.",
+          "30 days, ECOA adverse action notice.",
+          "25 months, ECOA recordkeeping.",
+          "62 years, Reverse mortgage minimum age.",
+          "120 days, Temporary MLO authority.",
+          "59 million dollars, HMDA asset exemption threshold for 2026.",
+          "10,000 dollars plus 1 year, RESPA Section 8 penalty.",
+          "3 years, Extended right of rescission.",
+          "2 percent, HECM upfront MIP.",
+        ].join(" "), "Cheat Sheet");
+      };
+
+      const toggleReveal = (idx) => setRevealed(p => ({ ...p, [idx]: !p[idx] }));
+      const revealAll = () => { const a = {}; quickFacts.forEach((_, i) => a[i] = true); setRevealed(a); };
+
+      const SpeakBtn = ({ onClick, label, small }) => (
+        <button onClick={(e) => { e.stopPropagation(); speaking && currentLabel === label ? stopSpeaking() : onClick(); }}
+          style={{
+            background: speaking && currentLabel === label ? "#ff4a4a22" : "#ffffff11",
+            border: `1px solid ${speaking && currentLabel === label ? "#ff4a4a66" : "#ffffff22"}`,
+            borderRadius: "6px", padding: small ? "3px 8px" : "6px 12px",
+            color: speaking && currentLabel === label ? "#ff4a4a" : "#aaa",
+            fontSize: small ? "12px" : "13px", display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
+          }}>
+          {speaking && currentLabel === label ? "⏹" : "🔊"}
+        </button>
+      );
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0f", fontFamily: "Georgia, serif", color: "#e8e4d9" }}>
+
+          {(speaking || loading) && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: loading ? "#2a2a4a" : paused ? "#ff9a00" : "#4a9eff", padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "13px", color: loading ? "#aaa" : "#000" }}>
+              <span>{loading ? "⏳ Generating audio..." : paused ? "⏸ Paused" : "🔊 Reading"}: <strong>{currentLabel}</strong></span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                {!loading && <button onClick={pauseResume} style={{ background: "#00000022", border: "none", borderRadius: "4px", padding: "4px 14px", cursor: "pointer", color: "#000", fontSize: "13px", fontWeight: 700 }}>
+                  {paused ? "▶ Resume" : "⏸ Pause"}
+                </button>}
+                <button onClick={stopSpeaking} style={{ background: "#00000022", border: "none", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", color: loading ? "#ccc" : "#000", fontSize: "13px" }}>⏹ Stop</button>
+              </div>
+            </div>
+          )}
+
+          <div style={{ background: "linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)", padding: speaking ? "56px 24px 32px" : "40px 24px 32px", textAlign: "center", borderBottom: "2px solid #4a9eff33" }}>
+            <div style={{ fontSize: "12px", letterSpacing: "4px", color: "#4a9eff", textTransform: "uppercase", marginBottom: "12px" }}>NMLS SAFE ACT EXAM</div>
+            <h1 style={{ fontSize: "clamp(26px, 5vw, 46px)", fontWeight: 900, margin: "0 0 8px", background: "linear-gradient(90deg, #fff, #4a9eff, #fff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>MUST-MEMORIZE GUIDE</h1>
+            <p style={{ color: "#aaa", fontSize: "14px", margin: "0 0 24px" }}>시험 전날 완전 정복 — Key Facts + Memory Tricks + 🔊 Audio</p>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+              {[["sections","📚 Study Sections"],["flashcards","⚡ Flashcards"],["practice","🎯 Practice"]].map(([tab, label]) => (
+                <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: "10px 24px", borderRadius: "100px", border: activeTab === tab ? "2px solid #4a9eff" : "2px solid #333", background: activeTab === tab ? "#4a9eff22" : "transparent", color: activeTab === tab ? "#4a9eff" : "#888", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase" }}>
+                  {label}
+                </button>
+              ))}
+              <VoiceSettingsPanel voiceSettings={voiceSettings} setVoiceSettings={setVoiceSettings} />
+            </div>
+          </div>
+
+          <div style={{ maxWidth: "900px", margin: "0 auto", padding: "24px 16px 100px" }}>
+
+            {activeTab === "sections" && sections.map(section => (
+              <div key={section.id} style={{ marginBottom: "12px" }}>
+                <div style={{ background: activeSection === section.id ? `linear-gradient(135deg, ${section.color}, #0a0a0f)` : "#111118", border: `1px solid ${activeSection === section.id ? section.accent + "66" : "#222"}`, borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ fontSize: "22px" }}>{section.emoji}</span>
+                  <span onClick={() => setActiveSection(activeSection === section.id ? null : section.id)} style={{ flex: 1, fontSize: "17px", fontWeight: 700, cursor: "pointer", color: activeSection === section.id ? section.accent : "#ddd" }}>{section.title}</span>
+                  <SpeakBtn onClick={() => speakSection(section)} label={section.title} />
+                  <span onClick={() => setActiveSection(activeSection === section.id ? null : section.id)} style={{ fontSize: "20px", color: section.accent, cursor: "pointer", transform: activeSection === section.id ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.3s", display: "inline-block" }}>›</span>
+                </div>
+
+                {activeSection === section.id && (
+                  <div style={{ marginTop: "4px", border: `1px solid ${section.accent}33`, borderTop: "none", borderRadius: "0 0 12px 12px", background: "#0d0d15" }}>
+                    {section.items.map((item, idx) => (
+                      <div key={idx} style={{ padding: "18px 20px", borderBottom: idx < section.items.length - 1 ? "1px solid #1a1a25" : "none" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                          <h3 style={{ margin: 0, color: section.accent, fontSize: "14px", fontWeight: 700, flex: 1 }}>{item.title}</h3>
+                          <SpeakBtn onClick={() => speakItem(item, section.id, idx)} label={item.title} small />
+                        </div>
+                        <div style={{ background: `${section.accent}11`, border: `1px solid ${section.accent}33`, borderRadius: "8px", padding: "9px 13px", marginBottom: "10px", fontSize: "13px", color: section.accent, fontStyle: "italic" }}>
+                          🧠 {item.mnemonic}
+                        </div>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                          {item.facts.map((fact, i) => {
+                            const isHighlighted = highlightedFact && highlightedFact.sectionId === section.id && highlightedFact.itemIdx === idx && highlightedFact.factIdx === i;
+                            return (
+                              <li key={i} className={isHighlighted ? "speaking-highlight" : ""} style={{ padding: "3px 0", fontSize: "13px", color: isHighlighted ? "#fff" : (fact.startsWith("→") || fact.startsWith(" ") ? "#777" : "#bbb"), paddingLeft: fact.startsWith("→") || fact.startsWith(" ") ? "10px" : "0", lineHeight: "1.6", transition: "color 0.2s" }}>
+                                {fact.startsWith("→") || fact.startsWith(" ") ? fact : `• ${fact}`}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {activeTab === "flashcards" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "8px" }}>
+                  <h2 style={{ margin: 0, fontSize: "18px", color: "#ccc" }}>⚡ Quick-Fire Facts</h2>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {[["🔊 Read All", speakAllFlashcards, "#4a9eff"], ["Hide All", () => setRevealed({}), "#888"], ["Reveal All", revealAll, "#4aff8a"]].map(([label, fn, color]) => (
+                      <button key={label} onClick={fn} style={{ padding: "7px 14px", background: color + "22", border: `1px solid ${color}66`, borderRadius: "8px", color, fontSize: "13px" }}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))" }}>
+                  {quickFacts.map((fact, idx) => (
+                    <div key={idx} style={{ background: "#111118", border: "1px solid #222", borderRadius: "10px", padding: "14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "12px", color: "#999" }}>Q: {fact.q}</div>
+                        <button onClick={() => speakFlashcard(fact)} style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "13px" }}>🔊</button>
+                      </div>
+                      <div onClick={() => toggleReveal(idx)} style={{ fontSize: "15px", fontWeight: 700, cursor: "pointer", color: revealed[idx] ? "#4aff8a" : "#333", background: revealed[idx] ? "transparent" : "#1a1a1a", borderRadius: "4px", padding: revealed[idx] ? "0" : "2px 8px", minHeight: "22px" }}>
+                        {revealed[idx] ? fact.a : "tap to reveal →"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: "36px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+                    <h2 style={{ color: "#ff7a4a", fontSize: "17px", margin: 0 }}>🔥 Critical Numbers</h2>
+                    <button onClick={speakCheatSheet} style={{ padding: "6px 14px", background: "#ff7a4a22", border: "1px solid #ff7a4a66", borderRadius: "8px", color: "#ff7a4a", fontSize: "13px" }}>🔊 Read</button>
+                  </div>
+                  <div style={{ background: "#111118", border: "1px solid #ff7a4a33", borderRadius: "12px", overflow: "hidden" }}>
+                    {[["20 hours","Pre-licensing education"],["8 hours","Annual CE"],["75%","SAFE exam passing score"],["3 business days","Loan Estimate delivery"],["3 business days","Closing Disclosure (before closing)"],["3.5%","FHA min down payment (580+)"],["1.75%","FHA upfront MIP"],["0.55%","FHA annual MIP (most borrowers, 30-yr)"],["$832,750","2026 conforming loan limit"],["$1,249,125","2026 high-cost area ceiling"],["78% LTV","PMI auto-cancellation"],["43%","Max QM back-end DTI"],["2 months","Max RESPA escrow cushion"],["30 days","ECOA adverse action notice"],["25 months","ECOA recordkeeping"],["62 years","Reverse mortgage minimum age"],["120 days","Temporary MLO authority"],["$59 million","HMDA asset exemption threshold (2026)"],["$10,000 + 1 yr","RESPA Section 8 penalty"],["3 years","Extended right of rescission"],["2%","HECM upfront MIP"]].map(([num, desc], i, arr) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", padding: "11px 18px", borderBottom: i < arr.length - 1 ? "1px solid #1a1a25" : "none", background: i % 2 === 0 ? "transparent" : "#ffffff04" }}>
+                        <span style={{ fontWeight: 800, color: "#ff7a4a", fontSize: "14px", minWidth: "140px", fontFamily: "monospace" }}>{num}</span>
+                        <span style={{ color: "#bbb", fontSize: "13px" }}>{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "28px", background: "linear-gradient(135deg, #1a1a2e, #0f1a0f)", border: "1px solid #4aff8a44", borderRadius: "12px", padding: "22px" }}>
+                  <h2 style={{ color: "#4aff8a", margin: "0 0 14px", fontSize: "17px" }}>💡 Last-Minute Tips</h2>
+                  {["🎯 TRID: LE in 3 days after app. CD 3 days BEFORE closing.","🎯 FHA = HUD. VA = VA Dept. USDA = Agriculture. Ginnie Mae = GNMA (govt).",
+                  "🎯 ECOA = credit decisions. Fair Housing = property transactions.",
+                  "🎯 Processor does NOT need license UNLESS independent judgment.",
+                  "🎯 Zero tolerance = origination charges. Cannot increase. Ever.",
+                  "🎯 Right of rescission = REFINANCE only. NOT purchase. 3 days.",
+                  "🎯 Steering + Redlining + Blockbusting = ALL illegal.",
+                  "🎯 MLO compensation cannot be based on loan terms.",
+                  "🎯 QM = safe harbor. ATR must ALWAYS be verified.",
+                  "🎯 SAR = $5,000 suspicious. CTR = $10,000 cash. Never tip off subject.",
+                  "🎯 Business day for rescission INCLUDES Saturday, excludes Sunday & holidays.",
+                  "🎯 Appraiser independence: MLO CANNOT pressure, suggest value, or withhold payment.",
+                  "🎯 Occupancy fraud = claiming primary when it's investment = FRAUD.",
+                  "🎯 Fraud for profit (industry insider) is MORE serious than fraud for property.",
+                  "🎯 UDAAP: Unfair + Deceptive + ABUSIVE — CFPB authority post Dodd-Frank.",
+                  "🎯 Secondary market: Fannie/Freddie buy conventional. Ginnie backs FHA/VA/USDA.",
+                  "🎯 DTI uses GROSS income — before taxes, not take-home pay.",
+                  "🎯 LTV uses LESSER of purchase price or appraised value.",
+                  ].map((tip, i, arr) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: i < arr.length - 1 ? "1px solid #1a2a1a" : "none", fontSize: "13px", color: "#ccc", lineHeight: "1.6" }}>{tip}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {activeTab === "practice" && (
+              <div>
+                {/* Header row */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: "18px", color: "#ccc" }}>🎯 Practice Exam</h2>
+                    <div style={{ fontSize: "12px", color: "#666", marginTop: "3px" }}>10 questions · balanced by category · auto-refreshes each visit</div>
+                  </div>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    <button onClick={initPractice} style={{ padding: "7px 16px", background: "#4a9eff22", border: "1px solid #4a9eff66", borderRadius: "8px", color: "#4a9eff", fontSize: "13px" }}>🔄 New Set</button>
+                    <button onClick={() => setShowHistory(h => !h)} style={{ padding: "7px 16px", background: "#c44aff22", border: "1px solid #c44aff66", borderRadius: "8px", color: "#c44aff", fontSize: "13px" }}>
+                      📊 History {scoreHistory.length > 0 ? `(${scoreHistory.length})` : ""}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Score history panel */}
+                {showHistory && (
+                  <div style={{ background: "#0d0d15", border: "1px solid #c44aff33", borderRadius: "12px", padding: "16px", marginBottom: "20px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px" }}>
+                      <h3 style={{ margin: 0, color: "#c44aff", fontSize: "15px" }}>📊 Score History</h3>
+                      {scoreHistory.length > 0 && (
+                        <button onClick={() => setScoreHistory([])} style={{ background: "transparent", border: "1px solid #444", borderRadius: "6px", color: "#666", fontSize: "11px", padding: "3px 8px", cursor: "pointer" }}>Clear</button>
+                      )}
+                    </div>
+                    {scoreHistory.length === 0 ? (
+                      <div style={{ color: "#555", fontSize: "13px", textAlign: "center", padding: "16px" }}>No scores yet. Complete a practice set to see your history.</div>
+                    ) : (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                        {scoreHistory.map((entry, i) => (
+                          <div key={i} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", background: "#111118", borderRadius: "8px", border: `1px solid ${entry.pct >= 75 ? "#4aff8a33" : entry.pct >= 60 ? "#ffcc4a33" : "#ff4a4a33"}` }}>
+                            <div style={{ fontWeight: 800, fontSize: "20px", color: entry.pct >= 75 ? "#4aff8a" : entry.pct >= 60 ? "#ffcc4a" : "#ff4a4a", minWidth: "52px" }}>{entry.pct}%</div>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontSize: "13px", color: "#ccc" }}>{entry.score}/{entry.total} correct</div>
+                              <div style={{ fontSize: "11px", color: "#555", marginTop: "2px" }}>{entry.date}</div>
+                            </div>
+                            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+                              {Object.entries(entry.cats.reduce((acc, c) => {
+                                if (!acc[c.cat]) acc[c.cat] = { correct: 0, total: 0 };
+                                acc[c.cat].total++;
+                                if (c.correct) acc[c.cat].correct++;
+                                return acc;
+                              }, {})).map(([cat, s]) => (
+                                <span key={cat} style={{ fontSize: "10px", padding: "2px 6px", borderRadius: "4px", background: (catColors[cat] || "#888") + "22", color: catColors[cat] || "#888", border: `1px solid ${catColors[cat] || "#888"}44` }}>
+                                  {cat.split(" ")[0]} {s.correct}/{s.total}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        {scoreHistory.length >= 3 && (() => {
+                          const avg = Math.round(scoreHistory.reduce((a, e) => a + e.pct, 0) / scoreHistory.length);
+                          const best = Math.max(...scoreHistory.map(e => e.pct));
+                          return (
+                            <div style={{ display: "flex", gap: "12px", padding: "10px 14px", background: "#0a0a10", borderRadius: "8px", marginTop: "4px" }}>
+                              <span style={{ fontSize: "12px", color: "#888" }}>Average: <strong style={{ color: avg >= 75 ? "#4aff8a" : "#ffcc4a" }}>{avg}%</strong></span>
+                              <span style={{ fontSize: "12px", color: "#888" }}>Best: <strong style={{ color: "#4aff8a" }}>{best}%</strong></span>
+                              <span style={{ fontSize: "12px", color: "#888" }}>Attempts: <strong style={{ color: "#ccc" }}>{scoreHistory.length}</strong></span>
+                            </div>
+                          );
+                        })()}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Questions */}
+                <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+                  {practiceQuestions.map((q, qIdx) => {
+                    const answered = practiceAnswers[qIdx] !== undefined;
+                    const selected = practiceAnswers[qIdx];
+                    const isCorrect = answered && selected === q.shuffled.correct;
+                    return (
+                      <div key={qIdx} style={{ background: "#111118", border: `1px solid ${answered ? (isCorrect ? "#4aff8a44" : "#ff4a4a44") : "#222"}`, borderRadius: "12px", padding: "18px 20px", transition: "border-color 0.3s" }}>
+                        {/* Question header */}
+                        <div style={{ display: "flex", gap: "10px", marginBottom: "14px", alignItems: "flex-start" }}>
+                          <span style={{ background: catColors[q.cat] + "22", color: catColors[q.cat], border: `1px solid ${catColors[q.cat]}44`, borderRadius: "6px", fontSize: "10px", padding: "2px 7px", whiteSpace: "nowrap", marginTop: "2px", flexShrink: 0 }}>{q.cat}</span>
+                          <span style={{ fontSize: "14px", color: "#ddd", lineHeight: "1.6", fontWeight: 600 }}>
+                            <span style={{ color: "#666", marginRight: "6px" }}>Q{qIdx + 1}.</span>{q.q}
+                          </span>
+                        </div>
+                        {/* Choices */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                          {q.shuffled.choices.map((choice, cIdx) => {
+                            const isSelected = selected === cIdx;
+                            const isRightAnswer = cIdx === q.shuffled.correct;
+                            let bg = "#0d0d15", border = "#333", color = "#bbb", icon = null;
+                            if (answered) {
+                              if (isRightAnswer) { bg = "#4aff8a18"; border = "#4aff8a66"; color = "#4aff8a"; icon = "✓"; }
+                              else if (isSelected) { bg = "#ff4a4a18"; border = "#ff4a4a66"; color = "#ff4a4a"; icon = "✗"; }
+                            } else if (isSelected) {
+                              bg = "#4a9eff22"; border = "#4a9eff88"; color = "#4a9eff";
+                            }
+                            return (
+                              <div key={cIdx} onClick={() => handlePracticeAnswer(qIdx, cIdx)}
+                                style={{ display: "flex", alignItems: "center", gap: "12px", padding: "11px 14px", background: bg, border: `1px solid ${border}`, borderRadius: "8px", cursor: answered ? "default" : "pointer", transition: "all 0.2s", userSelect: "none" }}>
+                                <div style={{ width: "20px", height: "20px", borderRadius: "50%", border: `2px solid ${answered ? (isRightAnswer ? "#4aff8a" : isSelected ? "#ff4a4a" : "#333") : (isSelected ? "#4a9eff" : "#444")}`, background: answered ? (isRightAnswer ? "#4aff8a33" : isSelected ? "#ff4a4a33" : "transparent") : (isSelected ? "#4a9eff33" : "transparent"), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: "12px", fontWeight: 800, color: answered ? (isRightAnswer ? "#4aff8a" : isSelected ? "#ff4a4a" : "#444") : (isSelected ? "#4a9eff" : "#444"), transition: "all 0.2s" }}>
+                                  {icon || (isSelected && !answered ? "●" : "")}
+                                </div>
+                                <span style={{ fontSize: "13px", color, lineHeight: "1.5", fontWeight: isRightAnswer && answered ? 700 : 400 }}>{choice}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {/* Result message */}
+                        {answered && (
+                          <div style={{ marginTop: "12px", fontSize: "12px", color: isCorrect ? "#4aff8a" : "#ff6b6b", display: "flex", alignItems: "center", gap: "6px" }}>
+                            {isCorrect ? "✓ Correct!" : `✗ Incorrect — correct answer: ${q.shuffled.choices[q.shuffled.correct]}`}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Submit / Result */}
+                {practiceQuestions.length > 0 && (() => {
+                  const answeredCount = Object.keys(practiceAnswers).length;
+                  const total = practiceQuestions.length;
+                  const allDone = answeredCount === total;
+                  if (!practiceSubmitted) {
+                    return (
+                      <div style={{ marginTop: "24px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+                        <button onClick={submitPractice} disabled={!allDone}
+                          style={{ padding: "12px 28px", background: allDone ? "#4aff8a22" : "#222", border: `2px solid ${allDone ? "#4aff8a" : "#444"}`, borderRadius: "10px", color: allDone ? "#4aff8a" : "#555", fontSize: "15px", fontWeight: 700, cursor: allDone ? "pointer" : "not-allowed", transition: "all 0.2s" }}>
+                          Submit ({answeredCount}/{total})
+                        </button>
+                        {!allDone && <span style={{ fontSize: "12px", color: "#555" }}>Answer all {total} questions to submit</span>}
+                      </div>
+                    );
+                  }
+                  const score = practiceQuestions.reduce((acc, q, i) => acc + (practiceAnswers[i] === q.shuffled.correct ? 1 : 0), 0);
+                  const pct = Math.round(score / total * 100);
+                  const pass = pct >= 75;
+                  return (
+                    <div style={{ marginTop: "24px", background: pass ? "#0a1a0a" : "#1a0a0a", border: `2px solid ${pass ? "#4aff8a66" : "#ff4a4a66"}`, borderRadius: "12px", padding: "22px 24px" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+                        <div style={{ textAlign: "center" }}>
+                          <div style={{ fontSize: "48px", fontWeight: 900, color: pass ? "#4aff8a" : "#ff6b6b", lineHeight: 1 }}>{pct}%</div>
+                          <div style={{ fontSize: "13px", color: "#888", marginTop: "4px" }}>{score}/{total} correct</div>
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontSize: "18px", fontWeight: 700, color: pass ? "#4aff8a" : "#ff6b6b", marginBottom: "6px" }}>
+                            {pass ? "🎉 Passing Score!" : "📖 Keep Studying"}
+                          </div>
+                          <div style={{ fontSize: "13px", color: "#999" }}>
+                            {pass ? "Great work — you're on track for the NMLS exam!" : `You need ${Math.ceil(total * 0.75) - score} more correct to reach the 75% passing threshold.`}
+                          </div>
+                        </div>
+                        <button onClick={initPractice} style={{ padding: "10px 22px", background: "#4a9eff22", border: "2px solid #4a9eff", borderRadius: "10px", color: "#4a9eff", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
+                          🔄 Try Again
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "linear-gradient(90deg, #1a3a5c, #0f3460)", borderTop: "1px solid #4a9eff44", padding: "11px 24px", textAlign: "center", fontSize: "12px", color: "#4a9eff", letterSpacing: "2px" }}>
+            🎓 YOU GOT THIS — GOOD LUCK ON YOUR NMLS EXAM!
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>

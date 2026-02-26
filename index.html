@@ -100,7 +100,7 @@
           {
             title: "CRA & HMDA",
             mnemonic: "HMDA = Data Only. Does NOT prohibit discrimination.",
-            facts: ["HMDA: Requires lenders to collect and report mortgage data","HMDA does NOT prohibit discrimination — just collects data","CRA: Encourages banks to serve entire community","CRA ratings: Outstanding, Satisfactory, Needs to Improve, Substantial Non-Compliance","HMDA asset threshold: $54 million","LAR: Loan Application Register — annual submission"],
+            facts: ["HMDA: Requires lenders to collect and report mortgage data","HMDA does NOT prohibit discrimination — just collects data","CRA: Encourages banks to serve entire community","CRA ratings: Outstanding, Satisfactory, Needs to Improve, Substantial Non-Compliance","HMDA asset threshold: $59 million (2026)","LAR: Loan Application Register — annual submission"],
           },
           {
             title: "3 Types of Discrimination",
@@ -115,12 +115,12 @@
           {
             title: "Conventional Loans — 80/20/28/36",
             mnemonic: "80% LTV, 20% down, 28 front-end, 36 back-end",
-            facts: ["Conforming loan limit 2024: $766,550 (1-unit)","High-cost areas: up to $1,149,825","PMI required if LTV > 80% (less than 20% down)","PMI cancellation: Request at 80% LTV; auto-cancel at 78% LTV","DTI: Typically 28% front / 36% back","Fannie Mae (FNMA) & Freddie Mac (FHLMC) = GSEs"],
+            facts: ["Conforming loan limit 2026: $832,750 (1-unit)","High-cost areas: up to $1,249,125","PMI required if LTV > 80% (less than 20% down)","PMI cancellation: Request at 80% LTV; auto-cancel at 78% LTV","DTI: Typically 28% front / 36% back","Fannie Mae (FNMA) & Freddie Mac (FHLMC) = GSEs"],
           },
           {
             title: "FHA Loans — 3.5% / 580 / MIP",
             mnemonic: "FHA = 3.5% down, 580 score, MIP for life of loan",
-            facts: ["Min down payment: 3.5% (score 580+)","Min down payment: 10% (score 500–579)","MIP Upfront: 1.75% of loan amount","MIP Annual: 0.55%–1.05% (varies)","MIP Duration: Life of loan if down < 10%","MIP Duration: 11 years if down ≥ 10%","Max DTI: 43% typically","FHA insured by: HUD"],
+            facts: ["Min down payment: 3.5% (score 580+)","Min down payment: 10% (score 500–579)","MIP Upfront: 1.75% of loan amount","MIP Annual: 0.15%–0.75% (most borrowers pay 0.55%)","MIP Duration: Life of loan if down < 10%","MIP Duration: 11 years if down ≥ 10%","Max DTI: 43% typically","FHA insured by: HUD"],
           },
           {
             title: "VA Loans — 0% Down / No PMI",
@@ -229,6 +229,190 @@
           },
         ],
       },
+      {
+        id: "ethics", emoji: "⚠️", title: "Ethics, Fraud & BSA/AML", color: "#2a1a10", accent: "#ff6b35",
+        items: [
+          {
+            title: "Mortgage Fraud Types — EXAM FAVORITE",
+            mnemonic: "FISA: Flipping, Identity, Straw buyer, Appraisal",
+            facts: [
+              "Occupancy fraud: Claiming primary residence when it's investment property",
+              "Income fraud: Inflating or fabricating income on application",
+              "Appraisal fraud: Inflating property value — MLO cannot pressure appraiser",
+              "Straw buyer: Using another person's name/credit to obtain loan",
+              "Property flipping fraud: Rapid resale with artificially inflated appraisal",
+              "Air loans: Loans on non-existent properties",
+              "Dual contracts: Two purchase contracts — one real, one inflated for lender",
+              "Chunking: Convincing investor to buy multiple properties without disclosing",
+              "Fraud for property: Borrower misrepresents info to get loan",
+              "Fraud for profit: Industry insider scheme for financial gain — more serious",
+            ],
+          },
+          {
+            title: "MLO Ethics Rules",
+            mnemonic: "SAME: Steering, Anti-churning, Material disclosure, Ethics first",
+            facts: [
+              "Cannot steer borrower to higher-cost loan if they qualify for better",
+              "Cannot churn loans: repeated refinancing that benefits MLO not borrower",
+              "Must disclose all fees, conflicts of interest, and loan terms accurately",
+              "Cannot accept undisclosed gifts, kickbacks, or referral fees",
+              "Cannot discourage borrower from seeking outside advice",
+              "Must treat all applicants fairly — no disparate treatment",
+              "Fiduciary duty: Act in best interest of borrower",
+              "Must report suspicious activity — cannot tip off subject of SAR",
+            ],
+          },
+          {
+            title: "BSA / AML — Bank Secrecy Act",
+            mnemonic: "BSA = Big Suspicious Activity reports",
+            facts: [
+              "BSA: Requires financial institutions to detect and deter money laundering",
+              "SAR (Suspicious Activity Report): File if suspicious activity ≥ $5,000",
+              "CTR (Currency Transaction Report): File for cash transactions > $10,000",
+              "Structuring: Intentionally breaking up cash to avoid CTR = illegal",
+              "USA PATRIOT Act: Requires Customer Identification Program (CIP)",
+              "CIP requires: Name, DOB, address, ID number (SSN, passport, alien ID)",
+              "FinCEN: Financial Crimes Enforcement Network — receives BSA reports",
+              "Red flags: Unexplained cash, multiple properties, inconsistent income",
+              "Must NOT tip off the subject of a SAR filing",
+            ],
+          },
+          {
+            title: "UDAP / UDAAP",
+            mnemonic: "UDAAP = Unfair, Deceptive, Abusive Acts or Practices",
+            facts: [
+              "UDAP: FTC authority — Unfair or Deceptive Acts or Practices",
+              "UDAAP: CFPB authority (adds 'Abusive') — broader post-Dodd-Frank",
+              "Unfair: Causes substantial injury, not avoidable, harm outweighs benefit",
+              "Deceptive: Misleads reasonable consumer — even technically true ads",
+              "Abusive: Exploits lack of understanding OR consumer's reliance on MLO",
+              "Reg Z Advertising: Cannot advertise teaser rate without full disclosure",
+              "Trigger terms: If ad mentions rate/payment/down — must disclose all terms",
+            ],
+          },
+        ],
+      },
+      {
+        id: "math", emoji: "🔢", title: "Mortgage Math", color: "#102a1a", accent: "#50fa7b",
+        items: [
+          {
+            title: "DTI Calculation",
+            mnemonic: "Front = Housing ÷ Gross. Back = All Debts ÷ Gross.",
+            facts: [
+              "Front-end DTI = PITI ÷ Gross Monthly Income × 100",
+              "Example: PITI $1,500 / Income $5,000 = 30% front-end",
+              "Back-end DTI = (PITI + all monthly debts) ÷ Gross Monthly Income × 100",
+              "Example: PITI $1,500 + debts $500 / Income $5,000 = 40% back-end",
+              "Gross income = before taxes — NOT net take-home",
+              "Include: car loans, student loans, credit card minimums, child support",
+              "Exclude: utilities, insurance, groceries, cell phone",
+            ],
+          },
+          {
+            title: "LTV & Down Payment Math",
+            mnemonic: "LTV = Loan ÷ Value. Down = Value × (1 - LTV)",
+            facts: [
+              "LTV = Loan Amount ÷ Lesser of Purchase Price or Appraised Value × 100",
+              "Example: $180,000 loan / $200,000 value = 90% LTV",
+              "Down payment = Purchase Price × down payment %",
+              "Example: $200,000 × 3.5% = $7,000 FHA down payment",
+              "If appraised < purchase price: use appraised value for LTV",
+              "PMI required if LTV > 80% on conventional loans",
+              "To avoid PMI: need 20% down ($40,000 on $200,000 home)",
+            ],
+          },
+          {
+            title: "Points & Rate Buydown",
+            mnemonic: "1 point = 1% of loan. Buys rate down ~0.25%",
+            facts: [
+              "1 discount point = 1% of loan amount paid upfront",
+              "Example: 1 point on $200,000 loan = $2,000 upfront cost",
+              "Typically buys rate down by 0.125% to 0.25%",
+              "Break-even: Points cost ÷ monthly savings = months to recoup",
+              "Example: $2,000 cost / $50 monthly savings = 40 months break-even",
+              "Origination points: Lender fee — not same as discount points",
+              "2-1 buydown: Rate 2% lower year 1, 1% lower year 2, full rate year 3",
+            ],
+          },
+          {
+            title: "Self-Employed Income Calculation",
+            mnemonic: "2 years returns ÷ 24 = monthly qualifying income",
+            facts: [
+              "Use 2 years of federal tax returns (1040 + Schedule C/E/K-1)",
+              "Add back: depreciation, depletion, non-recurring losses",
+              "Self-employed = owns 25% or more of business",
+              "Formula: (Year 1 net + Year 2 net + add-backs) ÷ 24",
+              "If income declining year over year: use lower year only",
+              "Business must show 2-year history of self-employment",
+              "YTD P&L may be required if > 10% variance from prior year",
+            ],
+          },
+        ],
+      },
+      {
+        id: "market", emoji: "🏦", title: "Mortgage Market & Secondary Market", color: "#1a1a3a", accent: "#bd93f9",
+        items: [
+          {
+            title: "Primary vs. Secondary Market",
+            mnemonic: "Primary = originate. Secondary = buy/sell loans.",
+            facts: [
+              "Primary market: Where lenders originate loans directly to borrowers",
+              "Secondary market: Where lenders sell loans to investors",
+              "Selling loans frees up capital to originate more loans",
+              "Fannie Mae (FNMA): GSE — buys conforming conventional loans",
+              "Freddie Mac (FHLMC): GSE — buys conforming conventional loans",
+              "Ginnie Mae (GNMA): Government — backs FHA, VA, USDA loan pools",
+              "MBS (Mortgage-Backed Securities): Pools of loans sold to investors",
+              "Servicer: Collects payments — may differ from original lender",
+              "Servicing transfer: Borrower must be notified 15 days before transfer",
+            ],
+          },
+          {
+            title: "Mortgage Terminology — Key Terms",
+            mnemonic: "Know these or get tripped up on exam day",
+            facts: [
+              "Subordination: Junior lien holder agrees to remain in lower priority",
+              "Assumable loan: Buyer takes over seller's existing mortgage",
+              "Acceleration clause: Entire loan due immediately on default",
+              "Due-on-sale clause: Loan must be paid off when property is sold",
+              "Alienation clause: Same as due-on-sale — prevents assumption",
+              "Deficiency judgment: Lender sues for remaining balance after foreclosure",
+              "Recourse loan: Lender can pursue borrower's assets after foreclosure",
+              "Non-recourse: Lender limited to collateral only",
+              "Yield Spread Premium (YSP): Rebate to broker for higher-rate loan",
+            ],
+          },
+          {
+            title: "Appraisal Rules",
+            mnemonic: "MLO cannot pressure appraiser — EVER",
+            facts: [
+              "USPAP: Uniform Standards of Professional Appraisal Practice",
+              "URAR (Form 1004): Standard appraisal form for single-family homes",
+              "AIR (Appraiser Independence Requirements): Prohibits pressure on appraiser",
+              "MLO cannot: suggest value, threaten appraiser, withhold payment if low",
+              "Desk review: Brief office review of existing appraisal",
+              "Field review: Appraiser visits property to verify",
+              "BPO (Broker Price Opinion): Not an appraisal — lower cost estimate",
+              "AMC (Appraisal Management Company): Third-party ordering appraisals",
+            ],
+          },
+          {
+            title: "Exam Format — Know This!",
+            mnemonic: "125 questions, 190 minutes, 75% to pass",
+            facts: [
+              "Total questions: 125 (115 scored + 10 unscored pretest)",
+              "Time allowed: 190 minutes (3 hrs 10 min)",
+              "Passing score: 75% = 86 correct out of 115 scored",
+              "Exam fee: $110 per attempt",
+              "Wait periods: 3 fails → 30-day wait → 3 more fails → 180-day wait",
+              "Test content: Loan Origination 27%, Fed Laws 24%, Mortgage Knowledge 20%, Ethics 18%, State Content 11%",
+              "ID required: Government-issued photo ID",
+              "Cannot bring: calculators, notes, phones",
+              "Prometric testing centers nationwide",
+            ],
+          },
+        ],
+      },
     ];
 
     const quickFacts = [
@@ -236,22 +420,38 @@
       { q: "Pre-licensing hours", a: "20 hours total" },
       { q: "CE hours annual", a: "8 hours" },
       { q: "SAFE test passing score", a: "75%" },
+      { q: "SAFE exam questions", a: "125 total (115 scored)" },
+      { q: "SAFE exam time limit", a: "190 minutes" },
       { q: "Loan Estimate delivery", a: "3 business days after application" },
       { q: "Closing Disclosure delivery", a: "3 business days before closing" },
       { q: "Right of rescission", a: "3 business days (refi only)" },
+      { q: "Extended rescission (no disclosure)", a: "3 years" },
       { q: "FHA min down payment", a: "3.5% (580+ score)" },
       { q: "FHA upfront MIP", a: "1.75%" },
+      { q: "FHA annual MIP (typical)", a: "0.55% (30-yr, <5% down)" },
       { q: "VA down payment", a: "0%" },
+      { q: "VA funding fee (1st use, 0% down)", a: "2.15%" },
       { q: "USDA down payment", a: "0%" },
-      { q: "Conforming loan limit 2024", a: "$766,550" },
+      { q: "USDA upfront guarantee fee", a: "1%" },
+      { q: "USDA annual fee", a: "0.35%" },
+      { q: "Conforming loan limit 2026", a: "$832,750" },
+      { q: "High-cost area ceiling 2026", a: "$1,249,125" },
       { q: "PMI auto-cancel LTV", a: "78%" },
       { q: "Max QM DTI", a: "43%" },
       { q: "RESPA escrow cushion max", a: "2 months" },
+      { q: "RESPA escrow surplus refund trigger", a: "$50 overage" },
       { q: "Adverse action notice", a: "30 days" },
       { q: "ECOA recordkeeping", a: "25 months" },
       { q: "Reverse mortgage min age", a: "62 years old" },
       { q: "HECM upfront MIP", a: "2%" },
+      { q: "HECM annual MIP", a: "0.5%" },
       { q: "Temporary MLO authority", a: "120 days" },
+      { q: "SAR filing threshold", a: "$5,000 suspicious activity" },
+      { q: "CTR filing threshold", a: "$10,000 cash transaction" },
+      { q: "HMDA asset threshold 2026", a: "$59 million" },
+      { q: "Servicing transfer notice", a: "15 days before effective date" },
+      { q: "HOEPA high-cost threshold (1st lien)", a: "APR > 6.5% above APOR" },
+      { q: "QM max points & fees", a: "3% of loan amount" },
     ];
 
     // ── Voice Settings Panel ──────────────────────────────────────────────────
@@ -352,6 +552,7 @@
       const audioRef = useRef(null);
       const playingRef = useRef(false);
       const stoppedRef = useRef(false);
+      const pausedRef = useRef(false);
 
       // Fetch TTS audio from Google Cloud and return blob URL
       const fetchTTS = async (text, voiceName, speed) => {
@@ -373,6 +574,7 @@
 
       const stopSpeaking = () => {
         stoppedRef.current = true;
+        pausedRef.current = false;
         playingRef.current = false;
         if (audioRef.current) { audioRef.current.pause(); audioRef.current = null; }
         setSpeaking(false); setPaused(false); setLoading(false);
@@ -380,19 +582,37 @@
       };
 
       const pauseResume = () => {
-        if (!audioRef.current) return;
-        if (paused) { audioRef.current.play(); setPaused(false); }
-        else { audioRef.current.pause(); setPaused(true); }
+        const audio = audioRef.current;
+        if (!audio) return;
+        if (pausedRef.current) {
+          // Resume
+          audio.play();
+          pausedRef.current = false;
+          setPaused(false);
+        } else {
+          // Pause
+          audio.pause();
+          pausedRef.current = true;
+          setPaused(true);
+        }
       };
 
       // Play a queue of { text, sectionId, itemIdx, factIdx } segments sequentially
       const playQueue = async (queue, label) => {
         stoppedRef.current = false;
+        pausedRef.current = false;
         playingRef.current = true;
         setSpeaking(true); setPaused(false); setLoading(true); setCurrentLabel(label);
 
         for (let i = 0; i < queue.length; i++) {
           if (stoppedRef.current) break;
+
+          // Wait while paused before fetching next segment
+          while (pausedRef.current && !stoppedRef.current) {
+            await new Promise(r => setTimeout(r, 100));
+          }
+          if (stoppedRef.current) break;
+
           const seg = queue[i];
           try {
             const url = await fetchTTS(seg.text, voiceSettings.voice, voiceSettings.speed);
@@ -408,13 +628,16 @@
               audio.onerror = () => { URL.revokeObjectURL(url); reject(); };
               audio.play();
             });
+
+            // After audio ends, clear the ref
+            audioRef.current = null;
           } catch(e) {
             if (!stoppedRef.current) { alert("TTS Error: " + e.message); stopSpeaking(); break; }
           }
         }
         if (!stoppedRef.current) {
           setSpeaking(false); setLoading(false); setCurrentLabel(""); setHighlightedFact(null);
-          playingRef.current = false;
+          playingRef.current = false; pausedRef.current = false;
         }
       };
 
@@ -450,7 +673,7 @@
 
       const speakCheatSheet = () => {
         speak([
-          "Critical Numbers Cheat Sheet.",
+          "Critical Numbers Cheat Sheet for 2026.",
           "20 hours, Pre-licensing education.",
           "8 hours, Annual CE.",
           "75 percent, SAFE exam passing score.",
@@ -458,7 +681,9 @@
           "3 business days before closing, Closing Disclosure.",
           "3.5 percent, FHA minimum down payment.",
           "1.75 percent, FHA upfront MIP.",
-          "766,550 dollars, 2024 conforming loan limit.",
+          "0.55 percent, FHA annual MIP for most 30-year borrowers.",
+          "832,750 dollars, 2026 conforming loan limit.",
+          "1,249,125 dollars, 2026 high-cost area ceiling.",
           "78 percent LTV, PMI auto-cancellation.",
           "43 percent, Maximum QM DTI.",
           "2 months, Maximum RESPA escrow cushion.",
@@ -466,6 +691,7 @@
           "25 months, ECOA recordkeeping.",
           "62 years, Reverse mortgage minimum age.",
           "120 days, Temporary MLO authority.",
+          "59 million dollars, HMDA asset exemption threshold for 2026.",
           "10,000 dollars plus 1 year, RESPA Section 8 penalty.",
           "3 years, Extended right of rescission.",
           "2 percent, HECM upfront MIP.",
@@ -587,7 +813,7 @@
                     <button onClick={speakCheatSheet} style={{ padding: "6px 14px", background: "#ff7a4a22", border: "1px solid #ff7a4a66", borderRadius: "8px", color: "#ff7a4a", fontSize: "13px" }}>🔊 Read</button>
                   </div>
                   <div style={{ background: "#111118", border: "1px solid #ff7a4a33", borderRadius: "12px", overflow: "hidden" }}>
-                    {[["20 hours","Pre-licensing education"],["8 hours","Annual CE"],["75%","SAFE exam passing score"],["3 business days","Loan Estimate delivery"],["3 business days","Closing Disclosure (before closing)"],["3.5%","FHA min down payment (580+)"],["1.75%","FHA upfront MIP"],["$766,550","2024 conforming loan limit"],["78% LTV","PMI auto-cancellation"],["43%","Max QM back-end DTI"],["2 months","Max RESPA escrow cushion"],["30 days","ECOA adverse action notice"],["25 months","ECOA recordkeeping"],["62 years","Reverse mortgage minimum age"],["120 days","Temporary MLO authority"],["$10,000 + 1 yr","RESPA Section 8 penalty"],["3 years","Extended right of rescission"],["2%","HECM upfront MIP"]].map(([num, desc], i, arr) => (
+                    {[["20 hours","Pre-licensing education"],["8 hours","Annual CE"],["75%","SAFE exam passing score"],["3 business days","Loan Estimate delivery"],["3 business days","Closing Disclosure (before closing)"],["3.5%","FHA min down payment (580+)"],["1.75%","FHA upfront MIP"],["0.55%","FHA annual MIP (most borrowers, 30-yr)"],["$832,750","2026 conforming loan limit"],["$1,249,125","2026 high-cost area ceiling"],["78% LTV","PMI auto-cancellation"],["43%","Max QM back-end DTI"],["2 months","Max RESPA escrow cushion"],["30 days","ECOA adverse action notice"],["25 months","ECOA recordkeeping"],["62 years","Reverse mortgage minimum age"],["120 days","Temporary MLO authority"],["$59 million","HMDA asset exemption threshold (2026)"],["$10,000 + 1 yr","RESPA Section 8 penalty"],["3 years","Extended right of rescission"],["2%","HECM upfront MIP"]].map(([num, desc], i, arr) => (
                       <div key={i} style={{ display: "flex", alignItems: "center", padding: "11px 18px", borderBottom: i < arr.length - 1 ? "1px solid #1a1a25" : "none", background: i % 2 === 0 ? "transparent" : "#ffffff04" }}>
                         <span style={{ fontWeight: 800, color: "#ff7a4a", fontSize: "14px", minWidth: "140px", fontFamily: "monospace" }}>{num}</span>
                         <span style={{ color: "#bbb", fontSize: "13px" }}>{desc}</span>
@@ -598,8 +824,25 @@
 
                 <div style={{ marginTop: "28px", background: "linear-gradient(135deg, #1a1a2e, #0f1a0f)", border: "1px solid #4aff8a44", borderRadius: "12px", padding: "22px" }}>
                   <h2 style={{ color: "#4aff8a", margin: "0 0 14px", fontSize: "17px" }}>💡 Last-Minute Tips</h2>
-                  {["🎯 TRID: LE in 3 days after app. CD 3 days BEFORE closing.","🎯 FHA = HUD. VA = VA Dept. USDA = Agriculture.","🎯 ECOA = credit decisions. Fair Housing = property transactions.","🎯 Processor does NOT need license UNLESS independent judgment.","🎯 Zero tolerance = origination charges. Cannot increase. Ever.","🎯 Right of rescission = REFINANCE only. NOT purchase. 3 days.","🎯 Steering + Redlining + Blockbusting = ALL illegal.","🎯 MLO compensation cannot be based on loan terms.","🎯 QM = safe harbor. ATR must ALWAYS be verified."].map((tip, i) => (
-                    <div key={i} style={{ padding: "7px 0", borderBottom: i < 8 ? "1px solid #1a2a1a" : "none", fontSize: "13px", color: "#ccc", lineHeight: "1.6" }}>{tip}</div>
+                  {["🎯 TRID: LE in 3 days after app. CD 3 days BEFORE closing.","🎯 FHA = HUD. VA = VA Dept. USDA = Agriculture. Ginnie Mae = GNMA (govt).",
+                  "🎯 ECOA = credit decisions. Fair Housing = property transactions.",
+                  "🎯 Processor does NOT need license UNLESS independent judgment.",
+                  "🎯 Zero tolerance = origination charges. Cannot increase. Ever.",
+                  "🎯 Right of rescission = REFINANCE only. NOT purchase. 3 days.",
+                  "🎯 Steering + Redlining + Blockbusting = ALL illegal.",
+                  "🎯 MLO compensation cannot be based on loan terms.",
+                  "🎯 QM = safe harbor. ATR must ALWAYS be verified.",
+                  "🎯 SAR = $5,000 suspicious. CTR = $10,000 cash. Never tip off subject.",
+                  "🎯 Business day for rescission INCLUDES Saturday, excludes Sunday & holidays.",
+                  "🎯 Appraiser independence: MLO CANNOT pressure, suggest value, or withhold payment.",
+                  "🎯 Occupancy fraud = claiming primary when it's investment = FRAUD.",
+                  "🎯 Fraud for profit (industry insider) is MORE serious than fraud for property.",
+                  "🎯 UDAAP: Unfair + Deceptive + ABUSIVE — CFPB authority post Dodd-Frank.",
+                  "🎯 Secondary market: Fannie/Freddie buy conventional. Ginnie backs FHA/VA/USDA.",
+                  "🎯 DTI uses GROSS income — before taxes, not take-home pay.",
+                  "🎯 LTV uses LESSER of purchase price or appraised value.",
+                  ].map((tip, i, arr) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: i < arr.length - 1 ? "1px solid #1a2a1a" : "none", fontSize: "13px", color: "#ccc", lineHeight: "1.6" }}>{tip}</div>
                   ))}
                 </div>
               </div>

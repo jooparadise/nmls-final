@@ -799,10 +799,10 @@
         return map[q] || `What is the ${q}?`;
       };
 
-      // Generate a short beep sound as a base64 WAV and return object URL
+      // Generate a short beep WAV blob URL
       const makeBeepUrl = () => {
         const sampleRate = 22050;
-        const duration = 0.18;
+        const duration = 0.15;
         const freq = 880;
         const numSamples = Math.floor(sampleRate * duration);
         const buffer = new ArrayBuffer(44 + numSamples * 2);
@@ -816,30 +816,46 @@
         writeStr(36, 'data'); view.setUint32(40, numSamples * 2, true);
         for (let i = 0; i < numSamples; i++) {
           const t = i / sampleRate;
-          const envelope = Math.min(1, t * 40) * Math.max(0, 1 - t / duration * 2);
-          const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.6 * 32767;
+          const envelope = Math.min(1, t * 60) * Math.max(0, 1 - t / duration * 1.5);
+          const sample = Math.sin(2 * Math.PI * freq * t) * envelope * 0.7 * 32767;
           view.setInt16(44 + i * 2, sample, true);
         }
         return URL.createObjectURL(new Blob([buffer], { type: 'audio/wav' }));
       };
 
-      // Play beep then wait silently (total ~3 seconds pause)
-      const playBeepPause = () => new Promise(resolve => {
+      // Wait ms, respecting pause and stop
+      const waitMs = (ms) => new Promise(resolve => {
+        let elapsed = 0;
+        const tick = setInterval(() => {
+          if (stoppedRef.current) { clearInterval(tick); resolve(); return; }
+          if (!pausedRef.current) elapsed += 50;   // only count time when NOT paused
+          if (elapsed >= ms) { clearInterval(tick); resolve(); }
+        }, 50);
+      });
+
+      // Play one beep, respecting stop (pause mid-beep handled by audioRef)
+      const playOneBeep = () => new Promise(resolve => {
         const url = makeBeepUrl();
         const audio = new Audio(url);
         audioRef.current = audio;
-        audio.onended = () => {
-          URL.revokeObjectURL(url);
-          // After beep, wait ~2.8s of silence
-          let elapsed = 0;
-          const tick = setInterval(() => {
-            if (stoppedRef.current) { clearInterval(tick); resolve(); return; }
-            elapsed += 100;
-            if (elapsed >= 2800) { clearInterval(tick); resolve(); }
-          }, 100);
-        };
+        audio.onended = () => { URL.revokeObjectURL(url); audioRef.current = null; resolve(); };
+        audio.onerror = () => { URL.revokeObjectURL(url); audioRef.current = null; resolve(); };
         audio.play();
       });
+
+      // Beep x3 with gaps, then ~2.5s thinking silence — all pause-aware
+      const playBeepPause = async () => {
+        for (let i = 0; i < 3; i++) {
+          if (stoppedRef.current) return;
+          // Wait while paused before each beep
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) return;
+          await playOneBeep();
+          if (i < 2) await waitMs(420);  // gap between beeps
+        }
+        // Thinking silence after 3rd beep
+        await waitMs(2500);
+      };
 
       const speakFlashcard = async (fact) => {
         stopSpeaking();
@@ -849,37 +865,48 @@
         setSpeaking(true); setLoading(true); setCurrentLabel(fact.q);
 
         try {
-          // 1. Fetch and play question
-          const qText = toQuestion(fact.q);
-          const qUrl = await fetchTTS(qText, voiceSettings.voice, voiceSettings.speed);
+          // 1. Fetch question audio
+          const qUrl = await fetchTTS(toQuestion(fact.q), voiceSettings.voice, voiceSettings.speed);
           if (stoppedRef.current) { URL.revokeObjectURL(qUrl); return; }
           setLoading(false);
+
+          // Wait if paused before playing
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) { URL.revokeObjectURL(qUrl); return; }
+
           await new Promise((resolve, reject) => {
             const audio = new Audio(qUrl);
             audioRef.current = audio;
-            audio.onended = () => { URL.revokeObjectURL(qUrl); resolve(); };
-            audio.onerror = () => { URL.revokeObjectURL(qUrl); reject(); };
+            audio.onended = () => { URL.revokeObjectURL(qUrl); audioRef.current = null; resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(qUrl); audioRef.current = null; reject(); };
             audio.play();
           });
-          audioRef.current = null;
-
           if (stoppedRef.current) return;
 
-          // 2. Beep + ~3 sec pause
+          // 2. Beep x3 + thinking pause
           await playBeepPause();
           if (stoppedRef.current) return;
 
-          // 3. Fetch and play answer
+          // 3. Wait if paused before fetching answer
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) return;
+
+          // 4. Fetch and play answer
+          setLoading(true);
           const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
           if (stoppedRef.current) { URL.revokeObjectURL(aUrl); return; }
+          setLoading(false);
+
+          while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+          if (stoppedRef.current) { URL.revokeObjectURL(aUrl); return; }
+
           await new Promise((resolve, reject) => {
             const audio = new Audio(aUrl);
             audioRef.current = audio;
-            audio.onended = () => { URL.revokeObjectURL(aUrl); resolve(); };
-            audio.onerror = () => { URL.revokeObjectURL(aUrl); reject(); };
+            audio.onended = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; resolve(); };
+            audio.onerror = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; reject(); };
             audio.play();
           });
-          audioRef.current = null;
         } catch(e) {
           if (!stoppedRef.current) console.error("Flashcard TTS error:", e);
         } finally {
@@ -928,13 +955,19 @@
             if (stoppedRef.current) break;
 
             // Answer
+            while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
+            if (stoppedRef.current) break;
+            setLoading(true);
             const aUrl = await fetchTTS("The answer is. " + fact.a, voiceSettings.voice, voiceSettings.speed);
+            if (stoppedRef.current) { URL.revokeObjectURL(aUrl); break; }
+            setLoading(false);
+            while (pausedRef.current && !stoppedRef.current) await new Promise(r => setTimeout(r, 50));
             if (stoppedRef.current) { URL.revokeObjectURL(aUrl); break; }
             await new Promise((resolve, reject) => {
               const audio = new Audio(aUrl);
               audioRef.current = audio;
-              audio.onended = () => { URL.revokeObjectURL(aUrl); resolve(); };
-              audio.onerror = () => { URL.revokeObjectURL(aUrl); reject(); };
+              audio.onended = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; resolve(); };
+              audio.onerror = () => { URL.revokeObjectURL(aUrl); audioRef.current = null; reject(); };
               audio.play();
             });
             audioRef.current = null;

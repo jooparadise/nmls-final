@@ -554,13 +554,102 @@
       const stoppedRef = useRef(false);
       const pausedRef = useRef(false);
 
+      // ── Normalize abbreviations for natural TTS pronunciation ────────────────
+      const normalizeTTS = (text) => {
+        // Pattern: phonetic-acronym, Full Name,
+        // Lowercase acronym = TTS reads as a word (not letter-by-letter)
+        const replacements = [
+          // Word-like acronyms — TTS already handles naturally, keep as-is
+          [/\bTRID\b/g,    "Trid"],
+          [/\bRESPA\b/g,   "Respa"],
+          [/\bTILA\b/g,    "Tyla"],
+          [/\bHOEPA\b/g,   "Hoepa"],
+          [/\bHELOC\b/g,   "Heelock"],
+          [/\bFHA\b/g,     "F H A"],
+          [/\bHUD\b/g,     "Hud"],
+          [/\bVA\b/g,      "V A"],
+          [/\bARMs\b/g,    "arm loans"],
+          [/\bARM\b/g,     "arm"],
+
+          // Acronym spoken as word + full expansion
+          [/\bSSN\b/g,     "S S N, Social Security Number,"],
+          [/\bMLOs\b/g,    "M L Os, mortgage loan originators,"],
+          [/\bMLO\b/g,     "M L O, mortgage loan originator,"],
+          [/\bNMLS\b/g,    "N M L S, Nationwide Multistate Licensing System,"],
+          [/\bCFPB\b/g,    "C F P B, Consumer Financial Protection Bureau,"],
+          [/\bHMDA\b/g,    "Hmda, Home Mortgage Disclosure Act,"],
+          [/\bECOA\b/g,    "Ecoa, Equal Credit Opportunity Act,"],
+          [/\bHECM\b/g,    "Heckm, Home Equity Conversion Mortgage,"],
+          [/\bUSDA\b/g,    "Usda, US Department of Agriculture,"],
+          [/\bFNMA\b/g,    "Fannie Mae,"],
+          [/\bFHLMC\b/g,   "Freddie Mac,"],
+          [/\bGNMA\b/g,    "Ginnie Mae,"],
+          [/\bFHFA\b/g,    "F H F A, Federal Housing Finance Agency,"],
+          [/\bDTI\b/g,     "D T I, debt-to-income ratio,"],
+          [/\bCLTV\b/g,    "C L T V, combined loan-to-value,"],
+          [/\bLTV\b/g,     "L T V, loan-to-value,"],
+          [/\bPMI\b/g,     "P M I, private mortgage insurance,"],
+          [/\bMIP\b/g,     "M I P, mortgage insurance premium,"],
+          [/\bMBS\b/g,     "M B S, mortgage-backed securities,"],
+          [/\bGSEs\b/g,    "G S Es, government-sponsored enterprises,"],
+          [/\bGSE\b/g,     "G S E, government-sponsored enterprise,"],
+          [/\bAPR\b/g,     "A P R, annual percentage rate,"],
+          [/\bATR\b/g,     "A T R, ability to repay,"],
+          [/\bQM\b/g,      "Q M, qualified mortgage,"],
+          [/\bPITI\b/g,    "P I T I, principal interest taxes and insurance,"],
+          [/\bCOE\b/g,     "C O E, Certificate of Eligibility,"],
+          [/\bGLB\b/g,     "G L B, Gramm-Leach-Bliley Act,"],
+          [/\bFCRA\b/g,    "F C R A, Fair Credit Reporting Act,"],
+          [/\bFACTA\b/g,   "Facta, Fair and Accurate Credit Transactions Act,"],
+          [/\bCRA\b/g,     "C R A, Community Reinvestment Act,"],
+          [/\bLAR\b/g,     "L A R, Loan Application Register,"],
+          [/\bSAR\b/g,     "S A R, Suspicious Activity Report,"],
+          [/\bCTR\b/g,     "C T R, Currency Transaction Report,"],
+          [/\bBSA\b/g,     "B S A, Bank Secrecy Act,"],
+          [/\bAML\b/g,     "A M L, anti-money laundering,"],
+          [/\bUDAAP\b/g,   "Udaap, unfair deceptive or abusive acts or practices,"],
+          [/\bUDAP\b/g,    "Udap, unfair or deceptive acts or practices,"],
+          [/\bCIP\b/g,     "C I P, Customer Identification Program,"],
+          [/\bFinCEN\b/g,  "Fincen, Financial Crimes Enforcement Network,"],
+          [/\bUSPAP\b/g,   "Uspap, Uniform Standards of Professional Appraisal Practice,"],
+          [/\bURAR\b/g,    "U R A R, Uniform Residential Appraisal Report,"],
+          [/\bAMC\b/g,     "A M C, appraisal management company,"],
+          [/\bBPO\b/g,     "B P O, broker price opinion,"],
+          [/\bAIR\b/g,     "A I R, Appraiser Independence Requirements,"],
+          [/\bAFBA\b/g,    "A F B A, affiliated business arrangement,"],
+          [/\bIRRRL\b/g,   "Irrrl, interest rate reduction refinance loan,"],
+          [/\bCE\b/g,      "C E, continuing education,"],
+          [/\bW-2\b/g,     "W 2"],
+          [/\b1040\b/g,    "ten forty"],
+          // Symbols
+          [/≥/g,   " or more "],
+          [/≤/g,   " or less "],
+          [/>/g,   " greater than "],
+          [/</g,   " less than "],
+          [/÷/g,   " divided by "],
+          [/×/g,   " times "],
+          [/\$/g,  " dollar "],
+          [/%/g,   " percent "],
+          [/&/g,   " and "],
+          [/—/g,   ". "],
+          [/\//g,  " or "],
+        ];
+
+        let result = text;
+        for (const [pattern, replacement] of replacements) {
+          result = result.replace(pattern, replacement);
+        }
+        return result;
+      };
+
       // Fetch TTS audio from Google Cloud and return blob URL
       const fetchTTS = async (text, voiceName, speed) => {
+        const normalizedText = normalizeTTS(text);
         const res = await fetch(`https://texttospeech.googleapis.com/v1/text:synthesize?key=${GCP_API_KEY}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            input: { text },
+            input: { text: normalizedText },
             voice: { languageCode: "en-US", name: voiceName },
             audioConfig: { audioEncoding: "MP3", speakingRate: speed },
           }),

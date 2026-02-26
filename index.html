@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NMLS Study Guide</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0a0a0f; font-family: Georgia, serif; color: #e8e4d9; }
+    button { font-family: Georgia, serif; cursor: pointer; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #111; }
+    ::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef } = React;
+
+    const sections = [
+      {
+        id: "safe", emoji: "🏛️", title: "SAFE Act", color: "#1a3a5c", accent: "#4a9eff",
+        items: [
+          {
+            title: "SAFE Act Basics",
+            mnemonic: "SAFE = State + Federal Together",
+            facts: ["Signed into law: July 30, 2008","Effective date: August 1, 2009. States had 1 year.","Full name: Secure and Fair Enforcement for Mortgage Licensing Act","Purpose: Create nationwide licensing and registration system for MLOs","Administered by: CFPB since Dodd-Frank 2011","Registry: NMLS — Nationwide Multistate Licensing System"],
+          },
+          {
+            title: "Who Needs a License?",
+            mnemonic: "ROME = Residential, Originate, Money, Employment",
+            facts: ["MLO takes residential mortgage loan applications AND offers or negotiates terms","Must be licensed if employed by non-bank, state-chartered institution","Must be registered if employed by federally chartered bank or credit union","Loan Processors: Generally do NOT need license if clerical only","Underwriters: Generally do NOT need license","Exception: If processor exercises independent judgment = needs license"],
+          },
+          {
+            title: "License Requirements — 20-3-8-80",
+            mnemonic: "20 dash 3 dash 8 dash 80. Tattoo these on your brain.",
+            facts: ["20 hours pre-licensing education required","3 hrs federal law, 3 hrs ethics, 2 hrs non-traditional lending, 12 hrs electives","8 hours annual continuing education","CE: 3 federal law, 2 ethics, 2 non-traditional, 1 elective","75% passing score on SAFE MLO test","Background check and credit report required","Retake: 3 attempts → 30-day wait → 3 more → 6-month wait"],
+          },
+          {
+            title: "Surety Bond & Temporary Authority",
+            mnemonic: "Bond = Protection for Borrowers",
+            facts: ["States set their own surety bond amounts","Purpose: Protect consumers from MLO fraud or misconduct","Unique identifier required on all loan documents","License renewal: Annual, typically December 31 deadline","Temporary authority: 120 days if changing from bank to non-bank"],
+          },
+        ],
+      },
+      {
+        id: "trid", emoji: "📋", title: "TRID — RESPA / TILA", color: "#1a3a2a", accent: "#4aff8a",
+        items: [
+          {
+            title: "TRID Key Dates — 3, 3, 7",
+            mnemonic: "3 days for Loan Estimate. 3 days before closing for CD. 7 days to wait.",
+            facts: ["Loan Estimate: Delivered within 3 business days of application","Loan Estimate: Valid for 10 business days","Closing Disclosure: Delivered 3 business days BEFORE closing","Right to rescind: 3 business days after closing — refinance only","Zero tolerance: Origination charges cannot increase at closing","10% tolerance: Certain third-party services","Unlimited tolerance: Non-required services borrower shops for"],
+          },
+          {
+            title: "6 Application Triggers — ALIENS",
+            mnemonic: "ALIENS: A-Address, L-Loan, I-Income, E-Estimated value, N-Name, S-SSN",
+            facts: ["A — Address of property","L — Loan amount","I — Income","E — Estimated value of property","N — Name of borrower","S — Social Security Number","Once all 6 collected = APPLICATION EXISTS → 3-day clock starts"],
+          },
+          {
+            title: "RESPA Prohibited Acts",
+            mnemonic: "No KicKs = No Kickbacks",
+            facts: ["Section 8: Prohibits kickbacks and unearned fees","Section 9: Seller cannot require use of specific title company","Section 10: Limits escrow account cushion to 2 months","AfBA: Must disclose, cannot require use","Penalty Section 8: Up to $10,000 fine + 1 year prison","Applies to: Federally related mortgage loans"],
+          },
+          {
+            title: "APR & Finance Charge",
+            mnemonic: "APR = All Prepaid Rates included",
+            facts: ["APR must be accurate within 1/8% (0.125%) tolerance","Finance charge INCLUDES: points, origination fees, PMI, most closing costs","Finance charge EXCLUDES: appraisal, credit report, title fees","Right of Rescission: Owner-occupied, non-purchase refinance = 3 days","Extended Rescission: If disclosures never given = 3 YEARS","TILA requires: APR, finance charge, amount financed, total payments"],
+          },
+        ],
+      },
+      {
+        id: "ecoa", emoji: "⚖️", title: "Fair Lending Laws", color: "#3a1a3a", accent: "#ff4adf",
+        items: [
+          {
+            title: "ECOA Protected Classes — RACE MAN",
+            mnemonic: "RACE MAN: Race, Age, Color, Exercise of rights, Marital status, Alimony, National origin",
+            facts: ["R — Race","A — Age (18+, cannot be used adversely)","C — Color","E — Exercise of rights under Consumer Protection Act","M — Marital status","A — Alimony/child support (must consider if disclosed)","N — National origin","Also: Religion, Sex, Receipt of public assistance","Adverse Action Notice: 30 days to notify of denial","Recordkeeping: 25 months for applications"],
+          },
+          {
+            title: "Fair Housing Act — 7 Classes",
+            mnemonic: "Race, Color, Religion, National Origin, Sex, Familial Status, Disability",
+            facts: ["Race, Color, Religion, National Origin","Sex (gender)","Familial status (families with children under 18)","Handicap / Disability","Does NOT include: age or marital status federally","Steering: Illegal to direct buyers by race","Redlining: Illegal to deny credit by geography","Blockbusting: Inducing panic selling based on protected class"],
+          },
+          {
+            title: "CRA & HMDA",
+            mnemonic: "HMDA = Data Only. Does NOT prohibit discrimination.",
+            facts: ["HMDA: Requires lenders to collect and report mortgage data","HMDA does NOT prohibit discrimination — just collects data","CRA: Encourages banks to serve entire community","CRA ratings: Outstanding, Satisfactory, Needs to Improve, Substantial Non-Compliance","HMDA asset threshold: $54 million","LAR: Loan Application Register — annual submission"],
+          },
+          {
+            title: "3 Types of Discrimination",
+            mnemonic: "3 D's: Disparate Treatment, Disparate Impact, Redlining",
+            facts: ["1. Disparate Treatment: Treating similarly situated people differently (intent)","2. Disparate Impact: Neutral policy with discriminatory effect","3. Redlining: Refusing to lend in certain geographic areas","Reverse Redlining: Targeting minority areas with predatory loans","Steering: Directing based on protected class","Blockbusting: Inducing panic selling"],
+          },
+        ],
+      },
+      {
+        id: "conventional", emoji: "🏠", title: "Loan Types & Guidelines", color: "#2a2a1a", accent: "#ffcc4a",
+        items: [
+          {
+            title: "Conventional Loans — 80/20/28/36",
+            mnemonic: "80% LTV, 20% down, 28 front-end, 36 back-end",
+            facts: ["Conforming loan limit 2024: $766,550 (1-unit)","High-cost areas: up to $1,149,825","PMI required if LTV > 80% (less than 20% down)","PMI cancellation: Request at 80% LTV; auto-cancel at 78% LTV","DTI: Typically 28% front / 36% back","Fannie Mae (FNMA) & Freddie Mac (FHLMC) = GSEs"],
+          },
+          {
+            title: "FHA Loans — 3.5% / 580 / MIP",
+            mnemonic: "FHA = 3.5% down, 580 score, MIP for life of loan",
+            facts: ["Min down payment: 3.5% (score 580+)","Min down payment: 10% (score 500–579)","MIP Upfront: 1.75% of loan amount","MIP Annual: 0.55%–1.05% (varies)","MIP Duration: Life of loan if down < 10%","MIP Duration: 11 years if down ≥ 10%","Max DTI: 43% typically","FHA insured by: HUD"],
+          },
+          {
+            title: "VA Loans — 0% Down / No PMI",
+            mnemonic: "VA = Veterans get 0% down, no PMI, but pay Funding Fee",
+            facts: ["Down payment: $0 — 100% financing","PMI: NONE","Funding fee: 2.15% (first use, no down)","Funding fee waived for: disabled veterans","Certificate of Eligibility (COE) required","No loan limit with full entitlement (post 2020)"],
+          },
+          {
+            title: "USDA Loans — Rural / 0% Down",
+            mnemonic: "USDA = Rural area, 0% down, income under 115% of median",
+            facts: ["Down payment: 0%","Upfront guarantee fee: 1%","Annual fee: 0.35%","Income limit: 115% of area median income","Property must be in eligible rural area","Administered by: US Dept of Agriculture"],
+          },
+        ],
+      },
+      {
+        id: "underwriting", emoji: "🔢", title: "Underwriting & Income", color: "#1a2a3a", accent: "#4ad4ff",
+        items: [
+          {
+            title: "The 4 C's of Credit",
+            mnemonic: "Credit, Capacity, Capital, Collateral",
+            facts: ["1. Credit History: FICO score, payment history, derogatory marks","2. Capacity: Ability to repay — income vs. debt (DTI)","3. Capital: Assets, savings, reserves","4. Collateral: Property value (LTV ratio)","FICO range: 300–850","Min score conventional: 620–640 typically"],
+          },
+          {
+            title: "DTI Ratios — Front & Back",
+            mnemonic: "Front = housing only. Back = ALL debts. Both ÷ gross monthly income.",
+            facts: ["Front-end: PITI ÷ Gross Monthly Income","PITI = Principal, Interest, Taxes, Insurance","Back-end: (PITI + all debts) ÷ Gross Monthly Income","Conventional: 28% front / 36% back","FHA: 31% front / 43% back","VA: No front-end, 41% back-end","USDA: 29% front / 41% back","QM rule: Max 43% DTI"],
+          },
+          {
+            title: "Income Calculations",
+            mnemonic: "Self-employed = 2 years tax returns ÷ 24 months",
+            facts: ["W-2 employee: Base salary from pay stub + W-2","Overtime/bonus: 2-year average if consistent","Self-employed: 2 years returns, net + add-backs ÷ 24","Commission: 2-year average","Rental income: 75% of gross rent (vacancy factor)","Social Security: Grossed up 125% (non-taxable)","Child support/alimony: 3 years continuance required"],
+          },
+          {
+            title: "LTV & CLTV",
+            mnemonic: "LTV = Loan ÷ Value. CLTV = all loans ÷ Value.",
+            facts: ["LTV = Loan Amount ÷ lower of appraised value or purchase price","CLTV = (1st + 2nd mortgage) ÷ Value","80% LTV = 20% equity = no PMI threshold","97% LTV = 3% down (HomeReady programs)","Appraisal form: URAR Form 1004"],
+          },
+        ],
+      },
+      {
+        id: "regulations", emoji: "📜", title: "Key Regulations & Numbers", color: "#2a1a1a", accent: "#ff7a4a",
+        items: [
+          {
+            title: "Critical Dollar Amounts",
+            mnemonic: "Memorize these or lose points!",
+            facts: ["HOEPA High Cost: APR > 6.5% above APOR (1st lien)","HOEPA Points & Fees: > 5% of loan amount","RESPA Section 10 escrow cushion: 2 months max","PMI auto-cancel: 78% LTV (22% equity)","Section 8 penalty: Up to $10,000 + 1 year prison"],
+          },
+          {
+            title: "Qualified Mortgage (QM) Rules",
+            mnemonic: "QM = Safe Harbor. 43% DTI. No bad features.",
+            facts: ["QM requires: Verify Ability to Repay (ATR)","Max DTI: 43%","Max loan term: 30 years","No negative amortization","No interest-only periods","No balloon payments (except rural/small creditor)","Points and fees: Max 3% of loan amount"],
+          },
+          {
+            title: "Dodd-Frank 2010",
+            mnemonic: "Dodd-Frank July 21, 2010 = created CFPB",
+            facts: ["Signed: July 21, 2010","Created: CFPB (Consumer Financial Protection Bureau)","CFPB consolidated protection from 7 agencies","MLO compensation: Cannot be based on loan terms (Reg Z)","Dual compensation: Cannot receive from both lender and borrower","Steering: Cannot push to higher-cost loan if lower available"],
+          },
+          {
+            title: "Privacy Laws",
+            mnemonic: "GLB = Give Borrowers annual Privacy Notice",
+            facts: ["Gramm-Leach-Bliley (GLB): Annual privacy notice required","Right to opt out of sharing with non-affiliated third parties","Red Flags Rule: Must have identity theft detection program","FACTA: Consumers get free annual credit report","FCRA: Governs credit reporting and adverse action notices"],
+          },
+        ],
+      },
+      {
+        id: "mortgage_types", emoji: "💰", title: "Mortgage Products", color: "#1a3a3a", accent: "#4affee",
+        items: [
+          {
+            title: "ARM Loans — Index + Margin + Caps",
+            mnemonic: "5/1 ARM = Fixed 5 years, adjusts every 1 year after",
+            facts: ["Index: Benchmark rate (SOFR, CMT) — the base","Margin: Lender profit added to index — fixed throughout","Fully Indexed Rate = Index + Margin","2/2/5 ARM: First adjust max 2%, each max 2%, lifetime max 5%","Teaser rate: Below-market initial rate"],
+          },
+          {
+            title: "Risky Loan Features",
+            mnemonic: "Neg Am = BAD. Balloon = RISKY. Prepay Penalty = COSTLY.",
+            facts: ["Negative amortization: Payment < interest = balance INCREASES","Balloon: Large final payment (e.g. 5/25 balloon)","Hard prepayment penalty: Applies to any prepayment","Soft prepayment penalty: Refinance only","Interest-only: Pay interest only, then fully amortize","3-2-1 buydown: Rate reduced 3%, 2%, 1% first 3 years"],
+          },
+          {
+            title: "HELOCs & Second Mortgages",
+            mnemonic: "HELOC = Credit card secured by your home",
+            facts: ["HELOC: Home Equity Line of Credit — revolving credit","Draw period: Typically 10 years","Repayment period: Typically 20 years","Piggyback 80/10/10: 80% 1st, 10% 2nd, 10% down — avoids PMI"],
+          },
+          {
+            title: "Reverse Mortgages — HECM",
+            mnemonic: "HECM = HUD-insured reverse mortgage. Must be 62+.",
+            facts: ["HECM: Home Equity Conversion Mortgage (FHA insured)","Age requirement: 62 or older","No monthly payment required by borrower","Repayment: Sale, death, moving out, or 12-month non-occupancy","HUD-approved counseling REQUIRED before closing","MIP: 2% upfront + 0.5% annual"],
+          },
+        ],
+      },
+      {
+        id: "closing", emoji: "🔑", title: "Closing & Title", color: "#2a1a3a", accent: "#c44aff",
+        items: [
+          {
+            title: "Title Insurance",
+            mnemonic: "Owner pays once, protects forever",
+            facts: ["Lender's title policy: Protects lender — required for most loans","Owner's title policy: Protects buyer — optional but recommended","Chain of title: History of property ownership","Cloud on title: Any claim or lien affecting clear title","Quiet title action: Court action to clear title dispute"],
+          },
+          {
+            title: "Deed Types — Most to Least Protection",
+            mnemonic: "General = Most protection. Quitclaim = Least protection.",
+            facts: ["General Warranty Deed: Warrants title against ALL claims","Special Warranty Deed: Warrants claims during grantor's ownership only","Bargain and Sale Deed: No warranties (common in foreclosures)","Quitclaim Deed: No warranties — conveys whatever interest grantor has","Deed of Trust: 3 parties — trustor, trustee, beneficiary"],
+          },
+          {
+            title: "Escrow & Closing Costs",
+            mnemonic: "PITI = Principal, Interest, Taxes, Insurance — goes into escrow monthly",
+            facts: ["Escrow: Holds funds for taxes and insurance","Initial escrow deposit: Up to 2 months cushion allowed","Origination charges: Zero tolerance — cannot increase","Recording fees: Zero tolerance","Proration: Dividing costs between buyer and seller at closing"],
+          },
+        ],
+      },
+    ];
+
+    const quickFacts = [
+      { q: "SAFE Act signed", a: "July 30, 2008" },
+      { q: "Pre-licensing hours", a: "20 hours total" },
+      { q: "CE hours annual", a: "8 hours" },
+      { q: "SAFE test passing score", a: "75%" },
+      { q: "Loan Estimate delivery", a: "3 business days after application" },
+      { q: "Closing Disclosure delivery", a: "3 business days before closing" },
+      { q: "Right of rescission", a: "3 business days (refi only)" },
+      { q: "FHA min down payment", a: "3.5% (580+ score)" },
+      { q: "FHA upfront MIP", a: "1.75%" },
+      { q: "VA down payment", a: "0%" },
+      { q: "USDA down payment", a: "0%" },
+      { q: "Conforming loan limit 2024", a: "$766,550" },
+      { q: "PMI auto-cancel LTV", a: "78%" },
+      { q: "Max QM DTI", a: "43%" },
+      { q: "RESPA escrow cushion max", a: "2 months" },
+      { q: "Adverse action notice", a: "30 days" },
+      { q: "ECOA recordkeeping", a: "25 months" },
+      { q: "Reverse mortgage min age", a: "62 years old" },
+      { q: "HECM upfront MIP", a: "2%" },
+      { q: "Temporary MLO authority", a: "120 days" },
+    ];
+
+    function App() {
+      const [activeSection, setActiveSection] = useState(null);
+      const [revealed, setRevealed] = useState({});
+      const [activeTab, setActiveTab] = useState("sections");
+      const [speaking, setSpeaking] = useState(false);
+      const [currentText, setCurrentText] = useState("");
+
+      const speak = (text, label) => {
+        if (!window.speechSynthesis) { alert("Browser does not support text-to-speech."); return; }
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US"; u.rate = 0.92; u.pitch = 1;
+        u.onstart = () => { setSpeaking(true); setCurrentText(label); };
+        u.onend = () => { setSpeaking(false); setCurrentText(""); };
+        u.onerror = () => { setSpeaking(false); setCurrentText(""); };
+        window.speechSynthesis.speak(u);
+      };
+
+      const stopSpeaking = () => { window.speechSynthesis.cancel(); setSpeaking(false); setCurrentText(""); };
+
+      const speakSection = (section) => {
+        const text = section.items.map(i => `${i.title}. Memory trick: ${i.mnemonic}. Key facts: ${i.facts.join(". ")}.`).join(" Next topic. ");
+        speak(`${section.title}. ${text}`, section.title);
+      };
+
+      const speakItem = (item) => {
+        speak(`${item.title}. Memory trick: ${item.mnemonic}. Key facts: ${item.facts.join(". ")}.`, item.title);
+      };
+
+      const speakAllFlashcards = () => {
+        speak(quickFacts.map(f => `${f.q}. Answer: ${f.a}`).join(". Next. "), "All Flashcards");
+      };
+
+      const speakCheatSheet = () => {
+        speak([
+          "Critical Numbers Cheat Sheet.",
+          "20 hours, Pre-licensing education.",
+          "8 hours, Annual CE.",
+          "75 percent, SAFE exam passing score.",
+          "3 business days, Loan Estimate delivery.",
+          "3 business days before closing, Closing Disclosure.",
+          "3.5 percent, FHA minimum down payment.",
+          "1.75 percent, FHA upfront MIP.",
+          "766,550 dollars, 2024 conforming loan limit.",
+          "78 percent LTV, PMI auto-cancellation.",
+          "43 percent, Maximum QM DTI.",
+          "2 months, Maximum RESPA escrow cushion.",
+          "30 days, ECOA adverse action notice.",
+          "25 months, ECOA recordkeeping.",
+          "62 years, Reverse mortgage minimum age.",
+          "120 days, Temporary MLO authority.",
+          "10,000 dollars plus 1 year, RESPA Section 8 penalty.",
+          "3 years, Extended right of rescission.",
+          "2 percent, HECM upfront MIP.",
+        ].join(" "), "Cheat Sheet");
+      };
+
+      const toggleReveal = (idx) => setRevealed(p => ({ ...p, [idx]: !p[idx] }));
+      const revealAll = () => { const a = {}; quickFacts.forEach((_, i) => a[i] = true); setRevealed(a); };
+
+      const SpeakBtn = ({ onClick, label, small }) => (
+        <button onClick={(e) => { e.stopPropagation(); speaking && currentText === label ? stopSpeaking() : onClick(); }}
+          style={{
+            background: speaking && currentText === label ? "#ff4a4a22" : "#ffffff11",
+            border: `1px solid ${speaking && currentText === label ? "#ff4a4a66" : "#ffffff22"}`,
+            borderRadius: "6px", padding: small ? "3px 8px" : "6px 12px",
+            color: speaking && currentText === label ? "#ff4a4a" : "#aaa",
+            fontSize: small ? "12px" : "13px", display: "flex", alignItems: "center", gap: "4px", flexShrink: 0,
+          }}>
+          {speaking && currentText === label ? "⏹" : "🔊"}
+        </button>
+      );
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#0a0a0f", fontFamily: "Georgia, serif", color: "#e8e4d9" }}>
+
+          {speaking && (
+            <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: "#4a9eff", padding: "8px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "13px", color: "#000" }}>
+              <span>🔊 Reading: <strong>{currentText}</strong></span>
+              <button onClick={stopSpeaking} style={{ background: "#00000022", border: "none", borderRadius: "4px", padding: "4px 12px", cursor: "pointer", color: "#000", fontSize: "13px" }}>⏹ Stop</button>
+            </div>
+          )}
+
+          <div style={{ background: "linear-gradient(135deg, #1a1a2e, #16213e, #0f3460)", padding: speaking ? "56px 24px 32px" : "40px 24px 32px", textAlign: "center", borderBottom: "2px solid #4a9eff33" }}>
+            <div style={{ fontSize: "12px", letterSpacing: "4px", color: "#4a9eff", textTransform: "uppercase", marginBottom: "12px" }}>NMLS SAFE ACT EXAM</div>
+            <h1 style={{ fontSize: "clamp(26px, 5vw, 46px)", fontWeight: 900, margin: "0 0 8px", background: "linear-gradient(90deg, #fff, #4a9eff, #fff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>MUST-MEMORIZE GUIDE</h1>
+            <p style={{ color: "#aaa", fontSize: "14px", margin: "0 0 24px" }}>시험 전날 완전 정복 — Key Facts + Memory Tricks + 🔊 Audio</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
+              {["sections", "flashcards"].map(tab => (
+                <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: "10px 24px", borderRadius: "100px", border: activeTab === tab ? "2px solid #4a9eff" : "2px solid #333", background: activeTab === tab ? "#4a9eff22" : "transparent", color: activeTab === tab ? "#4a9eff" : "#888", fontSize: "13px", letterSpacing: "2px", textTransform: "uppercase" }}>
+                  {tab === "sections" ? "📚 Study Sections" : "⚡ Flashcards"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div style={{ maxWidth: "900px", margin: "0 auto", padding: "24px 16px 100px" }}>
+
+            {activeTab === "sections" && sections.map(section => (
+              <div key={section.id} style={{ marginBottom: "12px" }}>
+                <div style={{ background: activeSection === section.id ? `linear-gradient(135deg, ${section.color}, #0a0a0f)` : "#111118", border: `1px solid ${activeSection === section.id ? section.accent + "66" : "#222"}`, borderRadius: "12px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "12px" }}>
+                  <span style={{ fontSize: "22px" }}>{section.emoji}</span>
+                  <span onClick={() => setActiveSection(activeSection === section.id ? null : section.id)} style={{ flex: 1, fontSize: "17px", fontWeight: 700, cursor: "pointer", color: activeSection === section.id ? section.accent : "#ddd" }}>{section.title}</span>
+                  <SpeakBtn onClick={() => speakSection(section)} label={section.title} />
+                  <span onClick={() => setActiveSection(activeSection === section.id ? null : section.id)} style={{ fontSize: "20px", color: section.accent, cursor: "pointer", transform: activeSection === section.id ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.3s", display: "inline-block" }}>›</span>
+                </div>
+
+                {activeSection === section.id && (
+                  <div style={{ marginTop: "4px", border: `1px solid ${section.accent}33`, borderTop: "none", borderRadius: "0 0 12px 12px", background: "#0d0d15" }}>
+                    {section.items.map((item, idx) => (
+                      <div key={idx} style={{ padding: "18px 20px", borderBottom: idx < section.items.length - 1 ? "1px solid #1a1a25" : "none" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+                          <h3 style={{ margin: 0, color: section.accent, fontSize: "14px", fontWeight: 700, flex: 1 }}>{item.title}</h3>
+                          <SpeakBtn onClick={() => speakItem(item)} label={item.title} small />
+                        </div>
+                        <div style={{ background: `${section.accent}11`, border: `1px solid ${section.accent}33`, borderRadius: "8px", padding: "9px 13px", marginBottom: "10px", fontSize: "13px", color: section.accent, fontStyle: "italic" }}>
+                          🧠 {item.mnemonic}
+                        </div>
+                        <ul style={{ margin: 0, padding: 0, listStyle: "none" }}>
+                          {item.facts.map((fact, i) => (
+                            <li key={i} style={{ padding: "3px 0", fontSize: "13px", color: fact.startsWith("→") || fact.startsWith(" ") ? "#777" : "#bbb", paddingLeft: fact.startsWith("→") || fact.startsWith(" ") ? "10px" : "0", lineHeight: "1.6" }}>
+                              {fact.startsWith("→") || fact.startsWith(" ") ? fact : `• ${fact}`}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            {activeTab === "flashcards" && (
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "8px" }}>
+                  <h2 style={{ margin: 0, fontSize: "18px", color: "#ccc" }}>⚡ Quick-Fire Facts</h2>
+                  <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                    {[["🔊 Read All", speakAllFlashcards, "#4a9eff"], ["Hide All", () => setRevealed({}), "#888"], ["Reveal All", revealAll, "#4aff8a"]].map(([label, fn, color]) => (
+                      <button key={label} onClick={fn} style={{ padding: "7px 14px", background: color + "22", border: `1px solid ${color}66`, borderRadius: "8px", color, fontSize: "13px" }}>{label}</button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gap: "8px", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))" }}>
+                  {quickFacts.map((fact, idx) => (
+                    <div key={idx} style={{ background: "#111118", border: "1px solid #222", borderRadius: "10px", padding: "14px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
+                        <div style={{ fontSize: "12px", color: "#999" }}>Q: {fact.q}</div>
+                        <button onClick={() => speak(`${fact.q}. Answer: ${fact.a}`, fact.q)} style={{ background: "transparent", border: "none", color: "#666", cursor: "pointer", fontSize: "13px" }}>🔊</button>
+                      </div>
+                      <div onClick={() => toggleReveal(idx)} style={{ fontSize: "15px", fontWeight: 700, cursor: "pointer", color: revealed[idx] ? "#4aff8a" : "#333", background: revealed[idx] ? "transparent" : "#1a1a1a", borderRadius: "4px", padding: revealed[idx] ? "0" : "2px 8px", minHeight: "22px" }}>
+                        {revealed[idx] ? fact.a : "tap to reveal →"}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ marginTop: "36px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "14px" }}>
+                    <h2 style={{ color: "#ff7a4a", fontSize: "17px", margin: 0 }}>🔥 Critical Numbers</h2>
+                    <button onClick={speakCheatSheet} style={{ padding: "6px 14px", background: "#ff7a4a22", border: "1px solid #ff7a4a66", borderRadius: "8px", color: "#ff7a4a", fontSize: "13px" }}>🔊 Read</button>
+                  </div>
+                  <div style={{ background: "#111118", border: "1px solid #ff7a4a33", borderRadius: "12px", overflow: "hidden" }}>
+                    {[["20 hours","Pre-licensing education"],["8 hours","Annual CE"],["75%","SAFE exam passing score"],["3 business days","Loan Estimate delivery"],["3 business days","Closing Disclosure (before closing)"],["3.5%","FHA min down payment (580+)"],["1.75%","FHA upfront MIP"],["$766,550","2024 conforming loan limit"],["78% LTV","PMI auto-cancellation"],["43%","Max QM back-end DTI"],["2 months","Max RESPA escrow cushion"],["30 days","ECOA adverse action notice"],["25 months","ECOA recordkeeping"],["62 years","Reverse mortgage minimum age"],["120 days","Temporary MLO authority"],["$10,000 + 1 yr","RESPA Section 8 penalty"],["3 years","Extended right of rescission"],["2%","HECM upfront MIP"]].map(([num, desc], i, arr) => (
+                      <div key={i} style={{ display: "flex", alignItems: "center", padding: "11px 18px", borderBottom: i < arr.length - 1 ? "1px solid #1a1a25" : "none", background: i % 2 === 0 ? "transparent" : "#ffffff04" }}>
+                        <span style={{ fontWeight: 800, color: "#ff7a4a", fontSize: "14px", minWidth: "140px", fontFamily: "monospace" }}>{num}</span>
+                        <span style={{ color: "#bbb", fontSize: "13px" }}>{desc}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: "28px", background: "linear-gradient(135deg, #1a1a2e, #0f1a0f)", border: "1px solid #4aff8a44", borderRadius: "12px", padding: "22px" }}>
+                  <h2 style={{ color: "#4aff8a", margin: "0 0 14px", fontSize: "17px" }}>💡 Last-Minute Tips</h2>
+                  {["🎯 TRID: LE in 3 days after app. CD 3 days BEFORE closing.","🎯 FHA = HUD. VA = VA Dept. USDA = Agriculture.","🎯 ECOA = credit decisions. Fair Housing = property transactions.","🎯 Processor does NOT need license UNLESS independent judgment.","🎯 Zero tolerance = origination charges. Cannot increase. Ever.","🎯 Right of rescission = REFINANCE only. NOT purchase. 3 days.","🎯 Steering + Redlining + Blockbusting = ALL illegal.","🎯 MLO compensation cannot be based on loan terms.","🎯 QM = safe harbor. ATR must ALWAYS be verified."].map((tip, i) => (
+                    <div key={i} style={{ padding: "7px 0", borderBottom: i < 8 ? "1px solid #1a2a1a" : "none", fontSize: "13px", color: "#ccc", lineHeight: "1.6" }}>{tip}</div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "linear-gradient(90deg, #1a3a5c, #0f3460)", borderTop: "1px solid #4a9eff44", padding: "11px 24px", textAlign: "center", fontSize: "12px", color: "#4a9eff", letterSpacing: "2px" }}>
+            🎓 YOU GOT THIS — GOOD LUCK ON YOUR NMLS EXAM!
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
